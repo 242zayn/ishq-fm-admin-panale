@@ -53,7 +53,11 @@ export const viewport: Viewport = {
   themeColor: META_THEME_COLORS.light
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+type RootLayoutProps = {
+  readonly children: React.ReactNode;
+};
+
+export default async function RootLayout({ children }: RootLayoutProps) {
   const cookieStore = await cookies();
   const activeThemeValue = cookieStore.get('active_theme')?.value;
   const isValidTheme = THEMES.some((t) => t.value === activeThemeValue);

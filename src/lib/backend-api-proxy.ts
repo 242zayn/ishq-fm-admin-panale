@@ -43,7 +43,3 @@ export async function proxyBackendRequest(path: string, request: NextRequest): P
     headers: responseHeaders
   });
 }
-
-export function proxyBackendGet(path: string, request: NextRequest): Promise<Response> {
-  return proxyBackendRequest(path, request);
-}
