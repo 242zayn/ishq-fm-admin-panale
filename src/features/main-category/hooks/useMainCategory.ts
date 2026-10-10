@@ -6,8 +6,19 @@ import {
   deleteMainCategoryMutation,
   updateMainCategoryMutation
 } from '../api/mutations';
-import { mainCategoriesQueryOptions, mainCategoryQueryOptions } from '../api/queries';
+import {
+  allMainCategoriesQueryOptions,
+  mainCategoriesQueryOptions,
+  mainCategoryQueryOptions
+} from '../api/queries';
 import { MainCategoryFilters } from '../api/types';
+
+export function useAllMainCategories() {
+  return useQuery({
+    ...allMainCategoriesQueryOptions(),
+    enabled: typeof window !== 'undefined'
+  });
+}
 
 export function useMainCategories(filters: MainCategoryFilters) {
   return useQuery({

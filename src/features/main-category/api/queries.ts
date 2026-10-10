@@ -14,6 +14,31 @@ export const mainCategoriesQueryOptions = (filters: MainCategoryFilters) =>
     queryFn: () => mainCategoryResource.getMainCategories(filters)
   });
 
+export const allMainCategoriesQueryOptions = () =>
+  queryOptions({
+    queryKey: [...mainCategoryKeys.all, 'options'] as const,
+    queryFn: async () => {
+      const pageSize = 100;
+      const firstPage = await mainCategoryResource.getMainCategories({
+        page: 1,
+        limit: pageSize
+      });
+      const { totalPages } = firstPage.meta.pagination;
+
+      if (totalPages <= 1) {
+        return firstPage.data;
+      }
+
+      const remainingPages = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, index) =>
+          mainCategoryResource.getMainCategories({ page: index + 2, limit: pageSize })
+        )
+      );
+
+      return [firstPage, ...remainingPages].flatMap((page) => page.data);
+    }
+  });
+
 export const mainCategoryQueryOptions = (id: string) =>
   queryOptions({
     queryKey: mainCategoryKeys.detail(id),

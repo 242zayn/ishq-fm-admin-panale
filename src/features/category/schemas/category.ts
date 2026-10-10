@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 export const categorySchema = z.object({
+  mainCategory: z.string(),
   title: z.string().trim().min(1, 'Title is required'),
   slug: z
     .string()
