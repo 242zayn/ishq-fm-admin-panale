@@ -1,5 +1,5 @@
-import type { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
+import type { NextRequest } from 'next/server';
 
 let backendApiUrl = process.env.BACKEND_API_URL ?? 'http://localhost:5001/api';
 while (backendApiUrl.endsWith('/')) {

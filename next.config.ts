@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'api.slingacademy.com',
         port: ''
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: ''
       }
     ]
   },
@@ -18,3 +23,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+
+// https://images.unsplash.com

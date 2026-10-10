@@ -1,9 +1,9 @@
 'use client';
+import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import type { MainCategory } from '../../api/types';
 import type { Column, ColumnDef } from '@tanstack/react-table';
-import { Icons } from '@/components/icons';
+import type { MainCategory } from '../../api/types';
 import { CellAction } from './cell-action';
 
 export const columns: ColumnDef<MainCategory>[] = [
@@ -14,14 +14,7 @@ export const columns: ColumnDef<MainCategory>[] = [
       <DataTableColumnHeader column={column} title='Title' />
     ),
     cell: ({ cell }) => <div className='font-medium'>{cell.getValue<string>()}</div>,
-    meta: {
-      label: 'Title',
-      placeholder: 'Search main categories...',
-      variant: 'text',
-      icon: Icons.text
-    },
-    enableColumnFilter: true,
-    enableSorting: false
+
   },
   {
     accessorKey: 'slug',
@@ -61,7 +54,8 @@ export const columns: ColumnDef<MainCategory>[] = [
     enableSorting: false
   },
   {
-    id: 'actions',
+    accessorKey:"actions",
+    header:"Actions",
     cell: ({ row }) => <CellAction data={row.original} />
   }
 ];
