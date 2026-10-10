@@ -1,27 +1,18 @@
-import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
-import { getQueryClient } from '@/lib/query-client';
-import { searchParamsCache } from '@/lib/searchparams';
-import { mainCategoriesQueryOptions } from '../api/queries';
+import { Suspense } from 'react';
 import { MainCategoryTable } from './main-category-tables';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MainCategoryListingPage() {
-  const page = searchParamsCache.get('page');
-  const search = searchParamsCache.get('name');
-  const pageLimit = searchParamsCache.get('perPage');
-
-  const filters = {
-    page,
-    limit: pageLimit,
-    ...(search && { search })
-  };
-
-  const queryClient = getQueryClient();
-
-  void queryClient.prefetchQuery(mainCategoriesQueryOptions(filters));
-
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <Suspense
+      fallback={
+        <div className='space-y-4 p-4'>
+          <Skeleton className='h-10 w-full' />
+          <Skeleton className='h-96 w-full' />
+        </div>
+      }
+    >
       <MainCategoryTable />
-    </HydrationBoundary>
+    </Suspense>
   );
 }

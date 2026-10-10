@@ -1,16 +1,26 @@
 'use client';
 
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import { createMainCategoryMutation, deleteMainCategoryMutation, updateMainCategoryMutation } from '../api/mutations';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  createMainCategoryMutation,
+  deleteMainCategoryMutation,
+  updateMainCategoryMutation
+} from '../api/mutations';
 import { mainCategoriesQueryOptions, mainCategoryQueryOptions } from '../api/queries';
 import { MainCategoryFilters } from '../api/types';
 
 export function useMainCategories(filters: MainCategoryFilters) {
-  return useSuspenseQuery(mainCategoriesQueryOptions(filters));
+  return useQuery({
+    ...mainCategoriesQueryOptions(filters),
+    enabled: typeof window !== 'undefined'
+  });
 }
 
 export function useMainCategory(id: string) {
-  return useSuspenseQuery(mainCategoryQueryOptions(id));
+  return useQuery({
+    ...mainCategoryQueryOptions(id),
+    enabled: typeof window !== 'undefined'
+  });
 }
 
 export function useCreateMainCategory() {

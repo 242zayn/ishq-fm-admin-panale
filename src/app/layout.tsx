@@ -6,6 +6,7 @@ import ThemeProvider from '@/components/themes/theme-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
+import Script from 'next/script';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import '../styles/globals.css';
@@ -66,7 +67,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang='en' suppressHydrationWarning data-theme={themeToApply}>
       <head>
-        <script
+        <Script
+          id='theme-color-init'
+          strategy='beforeInteractive'
           dangerouslySetInnerHTML={{
             __html: `
               try {
