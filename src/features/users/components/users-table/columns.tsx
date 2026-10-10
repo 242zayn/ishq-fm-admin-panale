@@ -31,8 +31,14 @@ export const columns: ColumnDef<User>[] = [
     enableColumnFilter: true
   },
   {
-    accessorKey: 'phone',
-    header: 'PHONE'
+    accessorKey: 'created_at',
+    header: 'JOINED',
+    cell: ({ cell }) => {
+      const createdAt = new Date(cell.getValue<string>());
+      return Number.isNaN(createdAt.getTime())
+        ? '—'
+        : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(createdAt);
+    }
   },
   {
     id: 'role',
@@ -50,7 +56,7 @@ export const columns: ColumnDef<User>[] = [
     },
     enableColumnFilter: true,
     meta: {
-      label: 'roles',
+      label: 'Role',
       variant: 'multiSelect' as const,
       options: ROLE_OPTIONS
     }
@@ -66,7 +72,16 @@ export const columns: ColumnDef<User>[] = [
     }
   },
   {
-    id: 'actions',
-    cell: ({ row }) => <CellAction data={row.original} />
+     accessorKey: 'action',
+    header: 'Action',
+    cell: ({ row }) => {
+      const isAdmin = row.original.role == "admin";
+      if (isAdmin) {
+        return null
+      }
+      return(
+        <CellAction data={row.original} />
+      )
+    }
   }
 ];

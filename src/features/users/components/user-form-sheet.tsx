@@ -14,8 +14,9 @@ import {
   SheetTitle
 } from '@/components/ui/sheet';
 import { Icons } from '@/components/icons';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createUserMutation, updateUserMutation } from '../api/mutations';
+import { userKeys } from '../api/queries';
 import type { User } from '../api/types';
 import { toast } from 'sonner';
 import { userSchema, type UserFormValues } from '../schemas/user';
@@ -23,8 +24,7 @@ import { ROLE_OPTIONS } from './users-table/options';
 
 const STATUS_OPTIONS = [
   { value: 'Active', label: 'Active' },
-  { value: 'Inactive', label: 'Inactive' },
-  { value: 'Invited', label: 'Invited' }
+  { value: 'Inactive', label: 'Inactive' }
 ];
 
 interface UserFormSheetProps {
@@ -35,24 +35,29 @@ interface UserFormSheetProps {
 
 export function UserFormSheet({ user, open, onOpenChange }: UserFormSheetProps) {
   const isEdit = !!user;
+  const queryClient = useQueryClient();
 
   const createMutation = useMutation({
     ...createUserMutation,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: userKeys.all });
       toast.success('User created');
       onOpenChange(false);
       form.reset();
     },
-    onError: () => toast.error("Couldn't create user. Try again.")
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Couldn't create user.")
   });
 
   const updateMutation = useMutation({
     ...updateUserMutation,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: userKeys.all });
       toast.success('User updated');
       onOpenChange(false);
     },
-    onError: () => toast.error("Couldn't update user. Try again.")
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Couldn't update user.")
   });
 
   const form = useAppForm({
@@ -60,18 +65,34 @@ export function UserFormSheet({ user, open, onOpenChange }: UserFormSheetProps) 
       first_name: user?.first_name ?? '',
       last_name: user?.last_name ?? '',
       email: user?.email ?? '',
-      phone: user?.phone ?? '',
-      role: user?.role ?? '',
+      password: '',
+      role: user?.role ?? 'user',
       status: user?.status ?? 'Active'
     } as UserFormValues,
     validators: {
       onSubmit: userSchema
     },
     onSubmit: async ({ value }) => {
+      const name = `${value.first_name} ${value.last_name}`.trim();
+
       if (isEdit) {
-        await updateMutation.mutateAsync({ id: user.id, values: value });
+        await updateMutation.mutateAsync({
+          id: user.id,
+          values: {
+            name,
+            email: value.email,
+            role: value.role,
+            isActive: value.status === 'Active',
+            ...(value.password ? { password: value.password } : {})
+          }
+        });
       } else {
-        await createMutation.mutateAsync(value);
+        await createMutation.mutateAsync({
+          name,
+          email: value.email,
+          password: value.password,
+          role: value.role
+        });
       }
     }
   });
@@ -109,9 +130,7 @@ export function UserFormSheet({ user, open, onOpenChange }: UserFormSheetProps) 
                 />
                 <form.AppField
                   name='last_name'
-                  children={(field) => (
-                    <field.TextField label='Last Name' required placeholder='Doe' />
-                  )}
+                  children={(field) => <field.TextField label='Last Name' placeholder='Doe' />}
                 />
               </div>
 
@@ -128,9 +147,25 @@ export function UserFormSheet({ user, open, onOpenChange }: UserFormSheetProps) 
               />
 
               <form.AppField
-                name='phone'
+                name='password'
+                validators={{
+                  onSubmit: ({ value }) =>
+                    !value && isEdit
+                      ? undefined
+                      : value.length < 6
+                        ? 'Password must be at least 6 characters'
+                        : undefined
+                }}
                 children={(field) => (
-                  <field.TextField label='Phone' required type='tel' placeholder='(555) 123-4567' />
+                  <field.TextField
+                    label={isEdit ? 'New password' : 'Password'}
+                    required={!isEdit}
+                    type='password'
+                    placeholder={
+                      isEdit ? 'Leave blank to keep current password' : 'At least 6 characters'
+                    }
+                    description={isEdit ? 'Leave blank to keep the current password.' : undefined}
+                  />
                 )}
               />
 
