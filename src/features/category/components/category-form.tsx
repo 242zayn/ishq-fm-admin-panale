@@ -138,7 +138,7 @@ export default function CategoryForm({ initialData, pageTitle }: CategoryFormPro
               </form.AppField>
               <form.AppField name='mainCategory'>
                 {(field) => (
-                  <field.SelectField 
+                  <field.SelectField
                     label='Main Category'
                     options={mainCategoryOptions}
                     placeholder={

@@ -31,18 +31,20 @@ export function SelectField({
         {required && ' *'}
       </FieldLabel>
       <Select
+        items={options}
         name={field.name}
         value={field.state.value}
         onValueChange={(value) => field.handleChange(value ?? '')}
       >
         <SelectTrigger
+          className='w-full'
           id={field.name}
           aria-invalid={isInvalid}
           aria-describedby={isInvalid ? `${field.name}-error` : undefined}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent alignItemWithTrigger={false} >
           <SelectGroup>
             {options.map((opt) => (
               <SelectItem key={opt.value} value={opt.value} disabled={opt.disabled}>
