@@ -1,13 +1,9 @@
 'use client';
 
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import {
-  createMainCategoryMutation,
-  deleteMainCategoryMutation,
-  updateMainCategoryMutation
-} from './mutations';
-import { mainCategoryQueryOptions, mainCategoriesQueryOptions } from './queries';
-import type { MainCategoryFilters } from './types';
+import { createMainCategoryMutation, deleteMainCategoryMutation, updateMainCategoryMutation } from '../api/mutations';
+import { mainCategoriesQueryOptions, mainCategoryQueryOptions } from '../api/queries';
+import { MainCategoryFilters } from '../api/types';
 
 export function useMainCategories(filters: MainCategoryFilters) {
   return useSuspenseQuery(mainCategoriesQueryOptions(filters));

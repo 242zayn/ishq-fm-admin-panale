@@ -1,7 +1,8 @@
 'use client';
 
 import { notFound } from 'next/navigation';
-import { useMainCategory } from '../api/hooks';
+// import { useMainCategory } from '../api/hooks';
+import { useMainCategory } from '../hooks/useMainCategory';
 import MainCategoryForm from './main-category-form';
 
 type MainCategoryViewPageProps = Readonly<{

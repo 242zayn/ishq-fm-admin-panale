@@ -7,9 +7,10 @@ import { LoadingButton } from '@/components/ui/loading-button';
 import { useAppForm } from '@/lib/form';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useCreateMainCategory, useUpdateMainCategory } from '../api/hooks';
+
 import type { MainCategory } from '../api/types';
 import { mainCategorySchema, type MainCategoryFormValues } from '../schemas/main-category';
+import { useCreateMainCategory, useUpdateMainCategory } from '../hooks/useMainCategory';
 
 type MainCategoryFormProps = Readonly<{
   initialData: MainCategory | null;

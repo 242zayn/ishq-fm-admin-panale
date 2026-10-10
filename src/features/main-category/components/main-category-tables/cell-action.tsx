@@ -9,12 +9,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useDeleteMainCategory } from '../../api/hooks';
+// import { useDeleteMainCategory } from '../../api/hooks';
 import type { MainCategory } from '../../api/types';
 import { Icons } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useDeleteMainCategory } from '../../hooks/useMainCategory';
 
 interface CellActionProps {
   data: MainCategory;

@@ -4,8 +4,9 @@ import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
-import { useMainCategories } from '../../api/hooks';
+// import { useMainCategories } from '../../api/hooks';
 import { columns } from './columns';
+import { useMainCategories } from '../../hooks/useMainCategory';
 
 export function MainCategoryTable() {
   const [params] = useQueryStates({
