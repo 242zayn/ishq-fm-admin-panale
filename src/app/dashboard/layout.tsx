@@ -6,6 +6,7 @@ import { InfobarProvider } from '@/components/ui/infobar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Next Shadcn Dashboard Starter',
@@ -17,8 +18,12 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // Persisting the sidebar state in the cookie.
   const cookieStore = await cookies();
+  if (!cookieStore.has('admin_access_token')) {
+    redirect('/login');
+  }
+
+  // Persisting the sidebar state in the cookie.
   const defaultOpen = cookieStore.get('sidebar_state')?.value === 'true';
   return (
     <KBar>

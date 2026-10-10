@@ -1,10 +1,13 @@
 'use client';
 
+import { mergeProps } from '@base-ui/react/merge-props';
+import { useRender } from '@base-ui/react/use-render';
 import {
   type Announcements,
-  type CollisionDetection,
   closestCenter,
   closestCorners,
+  type CollisionDetection,
+  defaultDropAnimationSideEffects,
   DndContext,
   type DndContextProps,
   type DragCancelEvent,
@@ -16,7 +19,6 @@ import {
   type DragStartEvent,
   type DropAnimation,
   type DroppableContainer,
-  defaultDropAnimationSideEffects,
   getFirstCollision,
   KeyboardCode,
   type KeyboardCoordinateGetter,
@@ -41,8 +43,6 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { mergeProps } from '@base-ui/react/merge-props';
-import { useRender } from '@base-ui/react/use-render';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 

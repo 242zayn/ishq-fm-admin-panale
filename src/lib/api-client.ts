@@ -19,7 +19,24 @@ export async function apiClient<T>(
 
   if (!res.ok) {
     const details = await res.text();
-    throw new Error(`API error: ${res.status} ${res.statusText}${details ? ` - ${details}` : ''}`);
+    let message = details;
+    try {
+      const payload: unknown = JSON.parse(details);
+      if (typeof payload === 'object' && payload !== null && 'message' in payload) {
+        const apiMessage = payload.message;
+        if (typeof apiMessage === 'string') {
+          message = apiMessage;
+        } else if (
+          Array.isArray(apiMessage) &&
+          apiMessage.every((item): item is string => typeof item === 'string')
+        ) {
+          message = apiMessage.join(', ');
+        }
+      }
+    } catch {
+      message = details;
+    }
+    throw new Error(`API error: ${res.status} ${res.statusText}${message ? ` - ${message}` : ''}`);
   }
 
   return res.json() as Promise<T>;

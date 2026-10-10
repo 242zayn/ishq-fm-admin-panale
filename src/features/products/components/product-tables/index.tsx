@@ -19,6 +19,7 @@ export function ProductTable() {
     category: parseAsString,
     sort: getSortingStateParser(columnIds).withDefault([])
   });
+  
 
   const filters = {
     page: params.page,
