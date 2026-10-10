@@ -1,5 +1,13 @@
 import { apiClient } from '@/lib/api-client';
-import type { GetStoriesParams, GetStoriesResponse, Story } from './types';
+import type {
+  GetStoriesParams,
+  GetStoriesResponse,
+  Story,
+  StoryDeleteResponse,
+  StoryLikeResponse,
+  StoryMutationResponse,
+  StoryPayload
+} from './types';
 
 function buildQuery(params: GetStoriesParams): string {
   const query = new URLSearchParams();
@@ -31,5 +39,31 @@ export const storyResource = {
   getStoryById(id: string, lang?: GetStoriesParams['lang']): Promise<Story> {
     const query = lang ? buildQuery({ lang }) : '';
     return apiClient<Story>(`/backend/stories/${encodeURIComponent(id)}${query}`);
+  },
+
+  createStory(data: StoryPayload): Promise<StoryMutationResponse> {
+    return apiClient<StoryMutationResponse>('/backend/stories', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  updateStory(id: string, data: Partial<StoryPayload>): Promise<StoryMutationResponse> {
+    return apiClient<StoryMutationResponse>(`/backend/stories/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  },
+
+  deleteStory(id: string): Promise<StoryDeleteResponse> {
+    return apiClient<StoryDeleteResponse>(`/backend/stories/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  },
+
+  toggleStoryLike(id: string): Promise<StoryLikeResponse> {
+    return apiClient<StoryLikeResponse>(`/backend/stories/${encodeURIComponent(id)}/like`, {
+      method: 'POST'
+    });
   }
 };

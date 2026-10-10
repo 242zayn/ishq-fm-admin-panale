@@ -8,6 +8,19 @@ import type { Category } from '../../api/types';
 import { CellAction } from './cell-action';
 
 export const columns: ColumnDef<Category>[] = [
+    {
+    accessorKey: 'banner',
+    header: 'Banner',
+    cell:({row}) =>{
+     const bannerImage = row.original.bannerImage;
+      return (
+        <div className='w-10 h-14 overflow-hidden bg-red-500 border-2  rounded-md '>
+
+          <img src={bannerImage} alt='df' className=' size-full '  />
+        </div>
+      )
+    }
+  },
   {
     id: 'name',
     accessorKey: 'title',

@@ -1,6 +1,13 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  createStoryMutation,
+  deleteStoryMutation,
+  toggleStoryLikeMutation,
+  updateStoryMutation
+} from './mutations';
+import { STORY_QUERY_KEYS } from './keys';
 import { storyResource } from './resource';
 import type { GetStoriesParams } from './types';
 
@@ -8,13 +15,7 @@ type QueryOptions = {
   enabled?: boolean;
 };
 
-export const STORY_QUERY_KEYS = {
-  all: ['stories'] as const,
-  list: (params: GetStoriesParams) => [...STORY_QUERY_KEYS.all, 'list', params] as const,
-  category: (categoryId: string, params: GetStoriesParams) =>
-    [...STORY_QUERY_KEYS.all, 'category', categoryId, params] as const,
-  detail: (id: string, lang?: string) => [...STORY_QUERY_KEYS.all, 'detail', id, lang] as const
-};
+export { STORY_QUERY_KEYS } from './keys';
 
 export function useGetStories(params: GetStoriesParams = {}, options?: QueryOptions) {
   return useQuery({
@@ -46,4 +47,20 @@ export function useGetStoryById(
     queryFn: () => storyResource.getStoryById(id, lang),
     enabled: options?.enabled ?? Boolean(id)
   });
+}
+
+export function useCreateStory() {
+  return useMutation(createStoryMutation);
+}
+
+export function useUpdateStory() {
+  return useMutation(updateStoryMutation);
+}
+
+export function useDeleteStory() {
+  return useMutation(deleteStoryMutation);
+}
+
+export function useToggleStoryLike() {
+  return useMutation(toggleStoryLikeMutation);
 }
