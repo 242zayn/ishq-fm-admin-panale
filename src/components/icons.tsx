@@ -43,6 +43,7 @@ import {
   IconFolder,
   IconGripVertical,
   IconHelpCircle,
+  IconHeart,
   IconInfoCircle,
   IconItalic,
   IconLayoutDashboard,
@@ -54,6 +55,7 @@ import {
   IconLogout,
   IconMessage,
   IconMinus,
+  IconMail,
   IconMoon,
   IconMusic,
   IconPalette,
@@ -144,6 +146,8 @@ export const Icons = {
 
   // Communication
   chat: IconMessage,
+  mail: IconMail,
+  heart: IconHeart,
   notification: IconBell,
   phone: IconPhone,
   video: IconVideo,
