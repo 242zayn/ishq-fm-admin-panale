@@ -4,6 +4,7 @@ import type {
   GetStoriesResponse,
   Story,
   StoryDeleteResponse,
+  ImageUploadResponse,
   StoryLikeResponse,
   StoryMutationResponse,
   StoryPayload
@@ -23,6 +24,16 @@ function buildQuery(params: GetStoriesParams): string {
 }
 
 export const storyResource = {
+  uploadImage(file: File): Promise<ImageUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return apiClient<ImageUploadResponse>('/backend/uploads/image', {
+      method: 'POST',
+      body: formData
+    });
+  },
+
   getStories(params: GetStoriesParams = {}): Promise<GetStoriesResponse> {
     return apiClient<GetStoriesResponse>(`/backend/stories${buildQuery(params)}`);
   },

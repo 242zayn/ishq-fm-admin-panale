@@ -1,6 +1,6 @@
 export type Category = {
   id: string;
-  mainCategory?: string | { id?: string; _id?: string; title?: string } | null;
+  mainCategory?: { id?: string; _id?: string; title?: string } | null;
   title: string;
   slug: string;
   description?: string;

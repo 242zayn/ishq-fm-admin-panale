@@ -35,6 +35,17 @@ export const columns: ColumnDef<Category>[] = [
     enableSorting: false
   },
   {
+    accessorKey: 'mainCategory',
+    header: 'PARENT CATEGORY',
+   cell: ({row}) =>{
+    const mainCategory = row.original.mainCategory?.title  ;
+    console.log("row data", row.original)
+    return (
+      <div className='font-medium'>{mainCategory}</div>
+    )
+   }
+  },
+  {
     accessorKey: 'isActive',
     header: 'STATUS',
     cell: ({ row }) => {

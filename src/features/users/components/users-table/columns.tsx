@@ -1,9 +1,9 @@
 'use client';
+import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import type { User } from '../../api/types';
 import { Column, ColumnDef } from '@tanstack/react-table';
-import { Icons } from '@/components/icons';
+import type { User } from '../../api/types';
 import { CellAction } from './cell-action';
 import { ROLE_OPTIONS } from './options';
 

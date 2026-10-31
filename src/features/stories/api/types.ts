@@ -126,6 +126,15 @@ export type StoryMutationResponse = {
   story: Story;
 };
 
+export type ImageUploadResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    url: string;
+    publicId: string;
+  };
+};
+
 export type StoryLikeResponse = {
   message: string;
   liked: boolean;

@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useCategories } from '@/features/category/hooks/useCategory';
+import { FileUploader } from '@/components/file-uploader';
 import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,9 +30,17 @@ import type {
   StoryTranslation
 } from '../api/types';
 import { useCreateStory, useGetStoryById, useUpdateStory } from '../api/hooks';
+import { storyResource } from '../api/resource';
 
 const storyIdField = '_id';
 const categoryIdField = '_id';
+const maxStoryImageSize = 1024 * 1024;
+const storyImageAccept = {
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/webp': ['.webp'],
+  'image/svg+xml': ['.svg']
+};
 
 const storyTranslationSchema = z.object({
   language: z.enum(['en', 'hi', 'bn', 'hinglish']),
@@ -184,6 +194,85 @@ function emptyStoryTranslation(language: StoryLanguage): StoryTranslationForm {
 
 function emptyChapterTranslation(language: StoryLanguage): ChapterTranslationForm {
   return { language, title: '', paragraphs: '' };
+}
+
+type StoryImageUploadProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function StoryImageUpload({ label, value, onChange }: StoryImageUploadProps) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  async function handleFiles(nextFiles: File[]) {
+    setFiles(nextFiles);
+
+    const file = nextFiles[0];
+    if (!file) {
+      onChange('');
+      return;
+    }
+
+    if (!Object.keys(storyImageAccept).includes(file.type)) {
+      toast.error('Only PNG, JPG, WEBP, and SVG images are allowed.');
+      return;
+    }
+
+    if (file.size > maxStoryImageSize) {
+      toast.error('Image size must be 1 MB or smaller.');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const response = await storyResource.uploadImage(file);
+      onChange(response.data.url);
+      setFiles([]);
+      toast.success(`${label} uploaded successfully.`);
+    } catch (error) {
+      setFiles([]);
+      toast.error(error instanceof Error ? error.message : `Could not upload the ${label.toLowerCase()}.`);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  return (
+    <div className='flex flex-col gap-2'>
+      <p className='text-sm font-medium'>{label} *</p>
+      {value ? (
+        <Card size='sm' className='gap-0 py-0'>
+          <CardHeader className='px-3 py-2'>
+            <CardTitle>Current {label}</CardTitle>
+          </CardHeader>
+          <CardContent className='px-3 pb-3'>
+            <Image
+              src={value}
+              alt={`Current ${label.toLowerCase()}`}
+              width={320}
+              height={80}
+              unoptimized
+              className='h-20 w-full rounded-md object-cover'
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+      <FileUploader
+        value={files}
+        onValueChange={(nextFiles) =>
+          void handleFiles(typeof nextFiles === 'function' ? nextFiles(files) : nextFiles)
+        }
+        accept={storyImageAccept}
+        maxSize={maxStoryImageSize}
+        maxFiles={1}
+        className='h-28'
+        disabled={isUploading}
+      />
+      <p className='text-sm text-muted-foreground'>PNG, JPG, WEBP, or SVG only. Maximum file size: 1 MB.</p>
+    </div>
+  );
 }
 
 type StoryEditorDialogProps = {
@@ -905,21 +994,19 @@ function StoryEditorForm({
             <div className='grid gap-4 sm:grid-cols-2'>
               <form.AppField name='coverImage'>
                 {(field) => (
-                  <field.TextField
-                    label='Cover image URL'
-                    type='url'
-                    placeholder='https://...'
-                    required
+                  <StoryImageUpload
+                    label='Cover image'
+                    value={field.state.value}
+                    onChange={field.handleChange}
                   />
                 )}
               </form.AppField>
               <form.AppField name='bannerImage'>
                 {(field) => (
-                  <field.TextField
-                    label='Banner image URL'
-                    type='url'
-                    placeholder='https://...'
-                    required
+                  <StoryImageUpload
+                    label='Banner image'
+                    value={field.state.value}
+                    onChange={field.handleChange}
                   />
                 )}
               </form.AppField>
