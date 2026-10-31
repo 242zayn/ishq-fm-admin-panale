@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -117,22 +118,17 @@ export default function UserAuth({
     <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-muted/30 px-4 py-12">
       <div className="pointer-events-none absolute -top-32 left-1/2 size-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
       <div className="relative w-full max-w-5xl">
-        <Link
-          href="/login"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold"
-        >
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <Icons.music className="size-5" />
-          </span>
-          Ishq FM
-        </Link>
+        
         <div className="grid overflow-hidden rounded-3xl border bg-background shadow-xl md:grid-cols-[0.9fr_1.1fr]">
           <section className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 text-primary-foreground md:flex">
             <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(var(--primary-foreground)_1px,transparent_1px)] [background-size:24px_24px]" />
             <div className="relative">
-              <span className="grid size-12 place-items-center rounded-2xl bg-primary-foreground/15">
+              {/*<span className="grid size-12 place-items-center rounded-2xl bg-primary-foreground/15">
                 <Icons.heart className="size-6" />
-              </span>
+              </span>*/}
+              <Link href="/user" className="mb-8 inline-flex items-center">
+                <Image src="/images/ishq-fm-logo.png" alt="Ishq FM" width={300} height={100} priority className="h-20 w-auto object-contain" />
+              </Link>
               <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground/70">
                 Your Ishq FM account
               </p>
@@ -309,7 +305,7 @@ export default function UserAuth({
                 )}
               </div>
             ) : (
-              <Card className="w-full max-w-md border-0 shadow-none">
+              <Card className="w-full max-w-md border-0 shadow-none px-4">
                 <CardHeader className="px-0">
                   <div className="mb-3 grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
                     <Icons.mail className="size-5" />
