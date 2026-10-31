@@ -8,7 +8,9 @@ export async function apiClient<T>(
   const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const headers = new Headers(options?.headers);
-  if (!headers.has('Content-Type')) {
+  const isFormData =
+    typeof FormData !== 'undefined' && options?.body instanceof FormData;
+  if (!headers.has('Content-Type') && !isFormData) {
     headers.set('Content-Type', 'application/json');
   }
 

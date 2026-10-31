@@ -1,47 +1,54 @@
-// ============================================================
-// User Service — Data Access Layer
-// ============================================================
-// This is the ONLY file you modify when connecting to your backend.
-// Queries (queries.ts) and components import from here — they never change.
-//
-// Pick your pattern and replace the function bodies below:
-//
-// 1. Server Actions + ORM (Prisma / Drizzle / Supabase)
-//    → Add 'use server' at the top of this file
-//    → Call your ORM directly in each function
-//
-// 2. Route Handlers + ORM
-//    → import { apiClient } from '@/lib/api-client'
-//    → return apiClient<UsersResponse>('/users?...')
-//    → Replace mock calls in route handlers (src/app/api/users/) with ORM
-//
-// 3. BFF — Route Handlers proxy to external backend (Laravel, Go, etc.)
-//    → import { apiClient } from '@/lib/api-client'
-//    → return apiClient<UsersResponse>('/users?...')
-//    → Route handlers proxy requests to your external backend service
-//
-// 4. Direct external API (frontend-only, no Next.js backend)
-//    → const res = await fetch('https://your-api.com/users?...')
-//    → return res.json()
-//
-// Current: Mock (in-memory fake data for demo/prototyping)
-// ============================================================
+import { apiClient } from '@/lib/api-client';
+import type {
+  BackendUser,
+  CreateUserPayload,
+  UpdateUserPayload,
+  User,
+  UsersResponse
+} from './types';
 
-import { fakeUsers } from '@/constants/mock-api-users';
-import type { UserFilters, UsersResponse, UserMutationPayload } from './types';
+function toDashboardUser(user: BackendUser): User {
+  const [firstName = '', ...lastName] = user.name.trim().split(/\s+/);
 
-export async function getUsers(filters: UserFilters): Promise<UsersResponse> {
-  return fakeUsers.getUsers(filters);
+  return {
+    id: user['_id'],
+    first_name: firstName,
+    last_name: lastName.join(' '),
+    email: user.email,
+    role: user.role,
+    status: user.isActive ? 'Active' : 'Inactive',
+    avatar: user.avatar ?? null,
+    created_at: user.createdAt,
+    updated_at: user.updatedAt
+  };
 }
 
-export async function createUser(data: UserMutationPayload) {
-  return fakeUsers.createUser(data);
+export async function getUsers(): Promise<UsersResponse> {
+  const users = await apiClient<BackendUser[]>('/backend/user');
+  const mappedUsers = users.map(toDashboardUser);
+
+  return {
+    users: mappedUsers,
+    total_users: mappedUsers.length
+  };
 }
 
-export async function updateUser(id: number, data: UserMutationPayload) {
-  return fakeUsers.updateUser(id, data);
+export async function createUser(data: CreateUserPayload): Promise<BackendUser> {
+  return apiClient<BackendUser>('/backend/user', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
 }
 
-export async function deleteUser(id: number) {
-  return fakeUsers.deleteUser(id);
+export async function updateUser(id: string, data: UpdateUserPayload): Promise<BackendUser> {
+  return apiClient<BackendUser>(`/backend/user/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function deleteUser(id: string): Promise<{ message: string }> {
+  return apiClient<{ message: string }>(`/backend/user/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
 }

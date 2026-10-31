@@ -1,17 +1,16 @@
 import { queryOptions } from '@tanstack/react-query';
 import { getUsers } from './service';
-import type { User, UserFilters } from './types';
 
-export type { User };
+export type { User } from './types';
 
 export const userKeys = {
   all: ['users'] as const,
-  list: (filters: UserFilters) => [...userKeys.all, 'list', filters] as const,
-  detail: (id: number) => [...userKeys.all, 'detail', id] as const
+  list: () => [...userKeys.all, 'list'] as const,
+  detail: (id: string) => [...userKeys.all, 'detail', id] as const
 };
 
-export const usersQueryOptions = (filters: UserFilters) =>
+export const usersQueryOptions = () =>
   queryOptions({
-    queryKey: userKeys.list(filters),
-    queryFn: () => getUsers(filters)
+    queryKey: userKeys.list(),
+    queryFn: getUsers
   });

@@ -1,15 +1,33 @@
 'use client';
 
+import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 import { getSortingStateParser } from '@/lib/parsers';
 import { usersQueryOptions } from '../../api/queries';
+import type { User } from '../../api/types';
 import { columns } from './columns';
 
 const columnIds = columns.map((c) => c.id).filter(Boolean) as string[];
+
+function getSortValue(user: User, columnId: string): string {
+  switch (columnId) {
+    case 'name':
+      return `${user.first_name} ${user.last_name}`;
+    case 'role':
+      return user.role;
+    case 'status':
+      return user.status;
+    case 'created_at':
+      return user.created_at;
+    default:
+      return '';
+  }
+}
 
 export function UsersTable() {
   const [params] = useQueryStates({
@@ -20,20 +38,41 @@ export function UsersTable() {
     sort: getSortingStateParser(columnIds).withDefault([])
   });
 
-  const filters = {
-    page: params.page,
-    limit: params.perPage,
-    ...(params.name && { search: params.name }),
-    ...(params.role && { roles: params.role }),
-    ...(params.sort.length > 0 && { sort: JSON.stringify(params.sort) })
-  };
+  const { data, error, isPending, refetch } = useQuery(usersQueryOptions());
+  const userRecords = data?.users;
+  const filteredUsers = useMemo(() => {
+    const search = params.name?.trim().toLocaleLowerCase();
+    const selectedRoles = new Set(params.role?.split(/[,.]/).filter(Boolean) ?? []);
+    const users = (userRecords ?? []).filter((user) => {
+      const matchesSearch =
+        !search ||
+        `${user.first_name} ${user.last_name} ${user.email}`.toLocaleLowerCase().includes(search);
+      return matchesSearch && (!selectedRoles.size || selectedRoles.has(user.role));
+    });
 
-  const { data } = useSuspenseQuery(usersQueryOptions(filters));
+    const [sort] = params.sort;
+    if (sort) {
+      users.sort((left, right) => {
+        const comparison = getSortValue(left, sort.id).localeCompare(
+          getSortValue(right, sort.id),
+          undefined,
+          {
+            numeric: true,
+            sensitivity: 'base'
+          }
+        );
+        return sort.desc ? -comparison : comparison;
+      });
+    }
+    return users;
+  }, [userRecords, params.name, params.role, params.sort]);
 
-  const pageCount = Math.ceil(data.total_users / params.perPage);
+  const pageCount = Math.ceil(filteredUsers.length / params.perPage);
+  const pageStart = (params.page - 1) * params.perPage;
+  const pageUsers = filteredUsers.slice(pageStart, pageStart + params.perPage);
 
   const { table } = useDataTable({
-    data: data.users,
+    data: pageUsers,
     columns,
     pageCount,
     shallow: true,
@@ -42,6 +81,18 @@ export function UsersTable() {
       columnPinning: { right: ['actions'] }
     }
   });
+
+  if (isPending) return <UsersTableSkeleton />;
+  if (error) {
+    return (
+      <div role='alert' className='text-destructive flex flex-col items-start gap-3'>
+        <p>Could not load users: {error.message}</p>
+        <Button variant='outline' onClick={() => void refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <DataTable table={table}>

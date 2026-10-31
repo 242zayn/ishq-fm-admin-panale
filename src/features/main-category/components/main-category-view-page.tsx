@@ -1,7 +1,8 @@
 'use client';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { notFound } from 'next/navigation';
-import { useMainCategory } from '../api/hooks';
+import { useMainCategory } from '../hooks/useMainCategory';
 import MainCategoryForm from './main-category-form';
 
 type MainCategoryViewPageProps = Readonly<{
@@ -17,7 +18,15 @@ export default function MainCategoryViewPage({ categoryId }: MainCategoryViewPag
 }
 
 function EditMainCategoryView(props: Readonly<{ categoryId: string }>) {
-  const { data } = useMainCategory(props.categoryId);
+  const { data, error, isPending } = useMainCategory(props.categoryId);
+
+  if (error) {
+    throw error;
+  }
+
+  if (isPending) {
+    return <Skeleton className='h-96 w-full' />;
+  }
 
   if (!data?.id) {
     notFound();

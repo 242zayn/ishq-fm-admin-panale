@@ -1,127 +1,33 @@
-# React Best Practices
+# React and Next.js Performance Guidance
 
-A structured repository for creating and maintaining React Best Practices optimized for agents and LLMs.
+This directory contains the Vercel React Best Practices reference used while developing this Next.js admin dashboard. The upstream guidance is useful, but project changes should follow the dashboard's own architecture and conventions described in the repository `AGENTS.md`.
 
-## Structure
+## Project context
 
-- `rules/` - Individual rule files (one per rule)
-  - `_sections.md` - Section metadata (titles, impacts, descriptions)
-  - `_template.md` - Template for creating new rules
-  - `area-description.md` - Individual rule files
-- `src/` - Build scripts and utilities
-- `metadata.json` - Document metadata (version, organization, abstract)
-- **`AGENTS.md`** - Compiled output (generated)
-- **`test-cases.json`** - Test cases for LLM evaluation (generated)
+- Next.js 16 App Router with React 19 and strict TypeScript.
+- Tailwind CSS v4 and shadcn/ui (New York style).
+- Feature modules live under `src/features/`; routes live under `src/app/`.
+- TanStack Query is the default for server state, with per-feature `types.ts`, `service.ts`, and `queries.ts` layers.
+- TanStack Table and nuqs power data tables and URL-backed filters.
+- Server Components are the default. Add a client boundary only where interactivity, browser APIs, or client hooks require it.
 
-## Getting Started
+## Contents
 
-1. Install dependencies:
+- `rules/` contains individual performance rules, grouped by filename prefix.
+- `AGENTS.md` is the compiled reference used by coding agents.
+- `SKILL.md` describes when and how to apply this guidance in the project.
 
-   ```bash
-   pnpm install
-   ```
+This is a vendored reference collection, not a standalone package in this dashboard. The source README mentions build scripts and package commands from its original repository; those commands are not assumed to exist here. Preserve upstream rule content unless you are intentionally updating the reference itself.
 
-2. Build AGENTS.md from rules:
+## Applying the guidance here
 
-   ```bash
-   pnpm build
-   ```
+When changing dashboard code:
 
-3. Validate rule files:
+1. Read the relevant feature and a nearby implementation before adding a new pattern.
+2. Keep data access in the feature service layer; components should use the feature's query options and service functions rather than importing mock data directly.
+3. For query-backed pages, follow the project's prefetch, hydration, `useSuspenseQuery`, and Suspense boundary conventions documented in the root `AGENTS.md`.
+4. Keep components server-rendered by default and avoid unnecessary client state, effects, and broad client boundaries.
+5. Use the shared shadcn components and `cn()` utility, and register icons through `src/components/icons.tsx` rather than importing icon packages in feature code.
+6. Prefer changes that fit the existing feature structure and avoid editing generated or vendored reference files to solve an application-level issue.
 
-   ```bash
-   pnpm validate
-   ```
-
-4. Extract test cases:
-   ```bash
-   pnpm extract-tests
-   ```
-
-## Creating a New Rule
-
-1. Copy `rules/_template.md` to `rules/area-description.md`
-2. Choose the appropriate area prefix:
-   - `async-` for Eliminating Waterfalls (Section 1)
-   - `bundle-` for Bundle Size Optimization (Section 2)
-   - `server-` for Server-Side Performance (Section 3)
-   - `client-` for Client-Side Data Fetching (Section 4)
-   - `rerender-` for Re-render Optimization (Section 5)
-   - `rendering-` for Rendering Performance (Section 6)
-   - `js-` for JavaScript Performance (Section 7)
-   - `advanced-` for Advanced Patterns (Section 8)
-3. Fill in the frontmatter and content
-4. Ensure you have clear examples with explanations
-5. Run `pnpm build` to regenerate AGENTS.md and test-cases.json
-
-## Rule File Structure
-
-Each rule file should follow this structure:
-
-````markdown
----
-title: Rule Title Here
-impact: MEDIUM
-impactDescription: Optional description
-tags: tag1, tag2, tag3
----
-
-## Rule Title Here
-
-Brief explanation of the rule and why it matters.
-
-**Incorrect (description of what's wrong):**
-
-```typescript
-// Bad code example
-```
-````
-
-**Correct (description of what's right):**
-
-```typescript
-// Good code example
-```
-
-Optional explanatory text after examples.
-
-Reference: [Link](https://example.com)
-
-## File Naming Convention
-
-- Files starting with `_` are special (excluded from build)
-- Rule files: `area-description.md` (e.g., `async-parallel.md`)
-- Section is automatically inferred from filename prefix
-- Rules are sorted alphabetically by title within each section
-- IDs (e.g., 1.1, 1.2) are auto-generated during build
-
-## Impact Levels
-
-- `CRITICAL` - Highest priority, major performance gains
-- `HIGH` - Significant performance improvements
-- `MEDIUM-HIGH` - Moderate-high gains
-- `MEDIUM` - Moderate performance improvements
-- `LOW-MEDIUM` - Low-medium gains
-- `LOW` - Incremental improvements
-
-## Scripts
-
-- `pnpm build` - Compile rules into AGENTS.md
-- `pnpm validate` - Validate all rule files
-- `pnpm extract-tests` - Extract test cases for LLM evaluation
-- `pnpm dev` - Build and validate
-
-## Contributing
-
-When adding or modifying rules:
-
-1. Use the correct filename prefix for your section
-2. Follow the `_template.md` structure
-3. Include clear bad/good examples with explanations
-4. Add appropriate tags
-5. Run `pnpm build` to regenerate AGENTS.md and test-cases.json
-6. Rules are automatically sorted by title - no need to manage numbers!
-
-## Acknowledgments
-
-Originally created by [@shuding](https://x.com/shuding) at [Vercel](https://vercel.com).
+Performance guidance is a tool for choosing a good implementation, not a reason to make code harder to understand. Follow the project's established patterns when they already solve the problem cleanly.

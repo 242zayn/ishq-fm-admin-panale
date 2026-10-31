@@ -6,6 +6,7 @@ import ThemeProvider from '@/components/themes/theme-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
+import Script from 'next/script';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import '../styles/globals.css';
@@ -66,18 +67,19 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang='en' suppressHydrationWarning data-theme={themeToApply}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                // Set meta theme color
-                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
-                }
-              } catch (_) {}
-            `
-          }}
-        />
+      <Script
+        id='theme-color-init'
+        strategy='beforeInteractive'
+        dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
+              }
+            } catch (_) {}
+          `
+        }}
+      />
       </head>
       <body
         className={cn(
