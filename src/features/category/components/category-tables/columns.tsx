@@ -1,85 +1,100 @@
-'use client';
+"use client";
 
-import { Icons } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
-import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import type { Column, ColumnDef } from '@tanstack/react-table';
-import type { Category } from '../../api/types';
-import { CellAction } from './cell-action';
+import { Icons } from "@/components/icons";
+import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
+import type { Column, ColumnDef } from "@tanstack/react-table";
+import type { Category } from "../../api/types";
+import { CellAction } from "./cell-action";
 
 export const columns: ColumnDef<Category>[] = [
-    {
-    accessorKey: 'banner',
-    header: 'Banner',
-    cell:({row}) =>{
-     const bannerImage = row.original.bannerImage;
+  {
+    accessorKey: "banner",
+    header: "Banner",
+    cell: ({ row }) => {
+      const bannerImage = row.original.bannerImage;
       return (
-        <div className='w-10 h-14 overflow-hidden bg-red-500 border-2  rounded-md '>
-
-          <img src={bannerImage} alt='df' className=' size-full '  />
+        <div className="w-10 h-14 overflow-hidden rounded-md border bg-muted">
+          {bannerImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={bannerImage}
+              alt="banner"
+              className="size-full object-cover"
+            />
+          ) : (
+            <div className="flex size-full items-center justify-center text-muted-foreground">
+              <Icons.media className="h-4 w-4" />
+            </div>
+          )}
         </div>
-      )
-    }
+      );
+    },
   },
   {
-    id: 'name',
-    accessorKey: 'title',
+    id: "name",
+    accessorKey: "title",
     header: ({ column }: { column: Column<Category, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Title' />
+      <DataTableColumnHeader column={column} title="Title" />
     ),
-    cell: ({ cell }) => <div className='font-medium'>{cell.getValue<string>()}</div>
+    cell: ({ cell }) => (
+      <div className="font-medium">{cell.getValue<string>()}</div>
+    ),
   },
   {
-    accessorKey: 'slug',
-    header: 'SLUG',
-    enableSorting: false
+    accessorKey: "slug",
+    header: "SLUG",
+    enableSorting: false,
   },
   {
-    accessorKey: 'mainCategory',
-    header: 'PARENT CATEGORY',
-   cell: ({row}) =>{
-    const mainCategory = row.original.mainCategory?.title  ;
-    console.log("row data", row.original)
-    return (
-      <div className='font-medium'>{mainCategory}</div>
-    )
-   }
+    accessorKey: "mainCategory",
+    header: "PARENT CATEGORY",
+    cell: ({ row }) => {
+      const raw = row.original.mainCategory;
+      const mainCategoryTitle =
+        typeof raw === "object" && raw !== null
+          ? raw.title
+          : typeof raw === "string"
+            ? raw
+            : "—";
+      return <div className="font-medium">{mainCategoryTitle || "—"}</div>;
+    },
   },
   {
-    accessorKey: 'isActive',
-    header: 'STATUS',
+    accessorKey: "isActive",
+    header: "STATUS",
     cell: ({ row }) => {
       const active = row.original.isActive;
       const Icon = active ? Icons.circleCheck : Icons.xCircle;
       return (
-        <Badge variant='outline' className='capitalize'>
+        <Badge variant="outline" className="capitalize">
           <Icon />
-          {active ? 'Active' : 'Inactive'}
+          {active ? "Active" : "Inactive"}
         </Badge>
       );
     },
-    enableSorting: false
+    enableSorting: false,
   },
   {
-    accessorKey: 'isFeatured',
-    header: 'FEATURED',
-    cell: ({ cell }) => (cell.getValue<boolean>() ? 'Yes' : 'No'),
-    enableSorting: false
+    accessorKey: "isFeatured",
+    header: "FEATURED",
+    cell: ({ cell }) => (cell.getValue<boolean>() ? "Yes" : "No"),
+    enableSorting: false,
   },
   {
-    accessorKey: 'sortOrder',
-    header: 'ORDER',
-    enableSorting: false
+    accessorKey: "sortOrder",
+    header: "ORDER",
+    enableSorting: false,
   },
   {
-    accessorKey: 'tags',
-    header: 'TAGS',
-    cell: ({ cell }) => (cell.getValue<string[]>() ?? []).join(', '),
-    enableSorting: false
+    accessorKey: "tags",
+    header: "TAGS",
+    cell: ({ cell }) => (cell.getValue<string[]>() ?? []).join(", "),
+    enableSorting: false,
   },
   {
-    id: 'actions',
-    header: 'Actions',
-    cell: ({ row }) => <CellAction data={row.original} />
-  }
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <CellAction data={row.original} />,
+  },
 ];

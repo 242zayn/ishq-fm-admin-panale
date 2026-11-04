@@ -1,6 +1,9 @@
 export type Category = {
   id: string;
-  mainCategory?: { id?: string; _id?: string; title?: string } | null;
+  mainCategory?:
+    | { id?: string; _id?: string; title?: string; slug?: string }
+    | string
+    | null;
   title: string;
   slug: string;
   description?: string;
@@ -10,11 +13,12 @@ export type Category = {
   isFeatured: boolean;
   sortOrder: number;
   tags: string[];
+  totalStories?: number;
   createdAt?: string;
   updatedAt?: string;
 };
 
-export type CategoryApiModel = Omit<Category, 'id'> & {
+export type CategoryApiModel = Omit<Category, "id"> & {
   _id: string;
 };
 
@@ -22,6 +26,9 @@ export type CategoryFilters = {
   page?: number;
   limit?: number;
   search?: string;
+  mainCategory?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
 };
 
 export type CategoriesResponse = {
@@ -39,7 +46,7 @@ export type CategoriesResponse = {
   };
 };
 
-export type CategoriesApiResponse = Omit<CategoriesResponse, 'data'> & {
+export type CategoriesApiResponse = Omit<CategoriesResponse, "data"> & {
   data: CategoryApiModel[];
 };
 
@@ -48,7 +55,10 @@ export type CategoryMutationResponse = {
   category: Category;
 };
 
-export type CategoryMutationApiResponse = Omit<CategoryMutationResponse, 'category'> & {
+export type CategoryMutationApiResponse = Omit<
+  CategoryMutationResponse,
+  "category"
+> & {
   category: CategoryApiModel;
 };
 
@@ -57,14 +67,17 @@ export type DeleteCategoryResponse = {
   deleted: Category;
 };
 
-export type DeleteCategoryApiResponse = Omit<DeleteCategoryResponse, 'deleted'> & {
+export type DeleteCategoryApiResponse = Omit<
+  DeleteCategoryResponse,
+  "deleted"
+> & {
   deleted: CategoryApiModel;
 };
 
 export type CategoryPayload = {
   mainCategory?: string | null;
-  title: string;
-  slug: string;
+  title?: string;
+  slug?: string;
   description?: string;
   bannerImage?: string;
   iconImage?: string;
