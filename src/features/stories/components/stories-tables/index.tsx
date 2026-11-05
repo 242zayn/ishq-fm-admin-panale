@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useTransition } from "react";
+import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableToolbar } from "@/components/ui/table/data-table-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Icons } from "@/components/icons";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -17,7 +20,6 @@ import {
 import { useAllMainCategories } from "@/features/main-category/hooks/useMainCategory";
 import { useGetStories } from "../../api/hooks";
 import type { StoryLanguage } from "../../api/types";
-import { CreateStoryButton } from "../story-editor-dialog";
 import { getStoriesColumns } from "./columns";
 
 const LANGUAGES: { value: StoryLanguage; label: string }[] = [
@@ -136,8 +138,18 @@ export function StoriesTable() {
               ))}
             </SelectContent>
           </Select>
-          {/* Add story dialog trigger */}
-          <CreateStoryButton onCreated={() => void refetch()} />
+
+          {/* Add story page navigation link */}
+          <Link
+            href="/dashboard/stories/new"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "h-8 rounded-lg bg-primary text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90",
+            )}
+          >
+            <Icons.add className="mr-1.5 h-3.5 w-3.5" />
+            Add Story
+          </Link>
         </DataTableToolbar>
       </DataTable>
     </div>

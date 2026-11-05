@@ -1,34 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertModal } from "@/components/modal/alert-modal";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { Story } from "../api/types";
 import { useDeleteStory, useToggleStoryLike } from "../api/hooks";
-import { StoryEditorDialog } from "./story-editor-dialog";
-import { useRouter } from "next/navigation";
 
 const storyIdField = "_id";
 
 export function StoryActions({ story }: { story: Story }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const router = useRouter();
   const deleteMutation = useDeleteStory();
   const likeMutation = useToggleStoryLike();
-  const isLiked = story.userInteraction?.liked ?? false;
-
-  const router = useRouter();
 
   function deleteStory() {
     deleteMutation.mutate(story[storyIdField], {
@@ -70,13 +57,7 @@ export function StoryActions({ story }: { story: Story }) {
         description={`“${story.title}” and its likes will be permanently deleted.`}
         confirmLabel="Delete story"
       />
-      {editOpen ? (
-        <StoryEditorDialog
-          story={story}
-          open={editOpen}
-          onOpenChange={setEditOpen}
-        />
-      ) : null}
+
       <div className="flex items-center gap-1.5">
         <Button
           variant="ghost"
@@ -85,29 +66,32 @@ export function StoryActions({ story }: { story: Story }) {
           onClick={() =>
             router.push(`/dashboard/stories/${story[storyIdField]}`)
           }
-          title="Edit Category"
+          title="View Story"
         >
-          <Icons.video />
-          <span className="sr-only"> View</span>
+          <Icons.video className="h-4 w-4" />
+          <span className="sr-only">View</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 rounded-lg border border-border/40 text-muted-foreground hover:bg-accent hover:text-foreground"
-          onClick={() => setEditOpen(true)}
-          title="Edit Category"
+          onClick={() =>
+            router.push(`/dashboard/stories/${story[storyIdField]}/edit`)
+          }
+          title="Edit Story"
         >
           <Icons.edit className="h-4 w-4" />
+          <span className="sr-only">Edit</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
           onClick={() => setDeleteOpen(true)}
-          title="Delete Category"
+          title="Delete Story"
         >
           <Icons.trash className="h-4 w-4" />
-          <span className="sr-only"> Delete</span>
+          <span className="sr-only">Delete</span>
         </Button>
       </div>
     </>
