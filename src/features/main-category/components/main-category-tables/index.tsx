@@ -56,6 +56,8 @@ export function MainCategoryTable() {
   const { data, error, isPending, refetch, isFetching } =
     useMainCategories(filters);
 
+  console.log("data", data);
+
   const { table } = useDataTable({
     data: data?.data ?? [],
     columns,

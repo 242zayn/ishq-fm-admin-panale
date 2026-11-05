@@ -13,7 +13,16 @@ function normalizeCategory(category: unknown): Category {
   if (!category || typeof category !== "object") {
     return {} as Category;
   }
-  const raw = category as Record<string, unknown>;
+  let raw = category as Record<string, unknown>;
+  if (raw.category && typeof raw.category === "object") {
+    raw = raw.category as Record<string, unknown>;
+  } else if (
+    raw.data &&
+    typeof raw.data === "object" &&
+    !Array.isArray(raw.data)
+  ) {
+    raw = raw.data as Record<string, unknown>;
+  }
   const id = (raw._id ?? raw.id ?? "") as string;
   const { _id: _, ...details } = raw;
   return { ...details, id } as Category;

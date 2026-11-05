@@ -117,6 +117,19 @@ export const columns: ColumnDef<MainCategory>[] = [
     enableSorting: false,
   },
   {
+    accessorKey: "conectedCategory",
+    header: "Total Child Category",
+    cell: ({ row }) => {
+      const count = row.original.categories?.length ?? 0;
+      return (
+        <span className="inline-flex min-w-7 h-6 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-800/80 px-2.5 text-xs font-bold text-zinc-200">
+          {count}
+        </span>
+      );
+    },
+    enableSorting: false,
+  },
+  {
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {

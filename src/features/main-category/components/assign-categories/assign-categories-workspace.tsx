@@ -26,6 +26,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { mainCategoryKeys } from "@/features/main-category/api/queries";
 
 import type { MainCategory } from "../../api/types";
 import type { Category } from "@/features/category/api/types";
@@ -45,9 +47,13 @@ interface AssignCategoriesWorkspaceProps {
   mainCategory: MainCategory;
 }
 
+console.log("mainCategoryKeys", mainCategoryKeys);
+
 export function AssignCategoriesWorkspace({
   mainCategory,
 }: AssignCategoriesWorkspaceProps) {
+  const queryClient = useQueryClient();
+
   // Queries
   const {
     data: assignedData,
@@ -158,6 +164,7 @@ export function AssignCategoriesWorkspace({
           );
           refetchAssigned();
           refetchAll();
+          queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
         },
         onError: (err) => {
           toast.error(
@@ -182,6 +189,7 @@ export function AssignCategoriesWorkspace({
           );
           refetchAssigned();
           refetchAll();
+          queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
         },
         onError: (err) => {
           toast.error(
@@ -203,6 +211,7 @@ export function AssignCategoriesWorkspace({
       onSuccess: () => {
         toast.success("Categories order updated");
         refetchAssigned();
+        queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
       },
       onError: (err) => {
         toast.error(
@@ -287,11 +296,11 @@ export function AssignCategoriesWorkspace({
     >
       <div className="flex flex-col gap-5">
         {/* Top Header / Breadcrumb matching screenshot style */}
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 shadow-xs backdrop-blur-sm">
           <div className="flex items-center gap-3.5">
             <Link
               href="/dashboard/main-category"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title="Back to Main Categories"
             >
               <Icons.chevronLeft className="h-4 w-4" />
@@ -320,8 +329,8 @@ export function AssignCategoriesWorkspace({
                     variant="outline"
                     className={
                       mainCategory.isActive
-                        ? "border-emerald-800/60 bg-emerald-950/60 text-emerald-400 rounded-full px-2 py-0 text-[11px]"
-                        : "border-zinc-700 bg-zinc-800/80 text-zinc-400 rounded-full px-2 py-0 text-[11px]"
+                        ? "rounded-full border-emerald-800/60 bg-emerald-950/60 px-2 py-0 text-[11px] text-emerald-400"
+                        : "rounded-full border-zinc-700 bg-zinc-800/80 px-2 py-0 text-[11px] text-zinc-400"
                     }
                   >
                     {mainCategory.isActive ? "Active" : "Inactive"}
@@ -360,7 +369,7 @@ export function AssignCategoriesWorkspace({
         {/* Two-Panel Drag and Drop Layout matching Image 2 */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* LEFT PANEL: Available Categories */}
-          <div className="flex flex-col rounded-2xl border border-border/50 bg-card/60 p-5 backdrop-blur-sm shadow-xs lg:col-span-7">
+          <div className="flex flex-col rounded-2xl border border-border/50 bg-card/60 p-5 shadow-xs backdrop-blur-sm lg:col-span-7">
             {/* Header with Title and Search */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
               <div>
@@ -374,7 +383,7 @@ export function AssignCategoriesWorkspace({
 
               {/* Search Bar matching screenshot */}
               <div className="relative w-full sm:w-64">
-                <Icons.search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Icons.search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search games / categories..."
                   value={searchQuery}
@@ -389,7 +398,7 @@ export function AssignCategoriesWorkspace({
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     <Icons.close className="h-3 w-3" />
                   </button>
@@ -448,14 +457,14 @@ export function AssignCategoriesWorkspace({
               <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-muted-foreground">
                 <Icons.categories className="mb-2 h-8 w-8 opacity-40" />
                 <p className="text-sm font-medium">No categories found</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {searchQuery
                     ? `No categories matching "${searchQuery}"`
                     : "Create a new category using the button above"}
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 overflow-y-auto max-h-[600px] p-1 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="grid max-h-[600px] grid-cols-2 gap-3 overflow-y-auto p-1 sm:grid-cols-3 xl:grid-cols-4">
                 {filteredAvailableCategories.map((cat) => (
                   <AvailableCard
                     key={cat.id}
@@ -473,7 +482,7 @@ export function AssignCategoriesWorkspace({
           <div
             ref={setRightDropRef}
             className={cn(
-              "flex flex-col rounded-2xl border bg-card/60 p-5 backdrop-blur-sm shadow-xs transition-colors duration-200 lg:col-span-5",
+              "flex flex-col rounded-2xl border bg-card/60 p-5 shadow-xs backdrop-blur-sm transition-colors duration-200 lg:col-span-5",
               isOverRightPanel
                 ? "border-primary/80 bg-primary/5 ring-2 ring-primary/20"
                 : "border-border/50",
@@ -538,7 +547,7 @@ export function AssignCategoriesWorkspace({
                   items={assignedCategories.map((c) => c.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="space-y-2.5 overflow-y-auto max-h-[600px] p-1">
+                  <div className="max-h-[600px] space-y-2.5 overflow-y-auto p-1">
                     {assignedCategories.map((cat, idx) => (
                       <AssignedItem
                         key={cat.id}
@@ -586,6 +595,7 @@ export function AssignCategoriesWorkspace({
           onCreated={() => {
             refetchAssigned();
             refetchAll();
+            queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
           }}
         />
 
@@ -595,6 +605,7 @@ export function AssignCategoriesWorkspace({
           mainCategory={mainCategory}
           onUpdated={() => {
             refetchAssigned();
+            queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
           }}
         />
       </div>

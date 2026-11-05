@@ -28,8 +28,6 @@ export function AvailableCard({
     },
   });
 
-  console.log("category", category);
-
   return (
     <div
       ref={setNodeRef}
@@ -44,7 +42,7 @@ export function AvailableCard({
       )}
     >
       {/* Assigned Badge Indicator */}
-      {isAssigned && (
+      {/*{category?.mainCategory && (
         <div className="absolute top-2.5 left-2.5">
           <Badge
             variant="outline"
@@ -54,7 +52,7 @@ export function AvailableCard({
             Assigned to {category?.mainCategory?.title}
           </Badge>
         </div>
-      )}
+      )}*/}
 
       {/* Quick Action Button */}
       <div className="absolute top-2 right-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
@@ -106,10 +104,21 @@ export function AvailableCard({
           {category.title}
         </span>
 
-        {category.slug && (
+        {/*{category?.mainCategory && (
           <span className="line-clamp-1 text-[11px] text-muted-foreground">
-            {category.slug}
+           main- {category?.mainCategory?.title}
           </span>
+        )}*/}
+        {category?.mainCategory && (
+          <div className="">
+            <Badge
+              variant="outline"
+              className="h-5 rounded-full border-emerald-800/60 bg-emerald-950/60 px-1.5 text-[10px] font-semibold text-emerald-400"
+            >
+              <Icons.check className="mr-0.5 h-2.5 w-2.5" />
+              Assigned to {category?.mainCategory?.title}
+            </Badge>
+          </div>
         )}
       </div>
     </div>

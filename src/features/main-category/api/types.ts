@@ -1,3 +1,5 @@
+import { Category } from "@/features/category/api/types";
+
 export type MainCategory = {
   id: string;
   title: string;
@@ -12,6 +14,7 @@ export type MainCategory = {
   tags: string[];
   createdAt?: string;
   updatedAt?: string;
+  categories?: Category[];
 };
 
 export type MainCategoryApiModel = Omit<MainCategory, "id"> & {
