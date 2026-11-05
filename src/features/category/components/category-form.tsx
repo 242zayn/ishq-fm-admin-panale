@@ -1,25 +1,29 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FieldGroup } from '@/components/ui/field';
-import { useAllMainCategories } from '@/features/main-category/hooks/useMainCategory';
-import { LoadingButton } from '@/components/ui/loading-button';
-import { useAppForm } from '@/lib/form';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import type { Category } from '../api/types';
-import { useCreateCategory, useUpdateCategory } from '../hooks/useCategory';
-import { categorySchema, type CategoryFormValues } from '../schemas/category';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldGroup } from "@/components/ui/field";
+import { useAllMainCategories } from "@/features/main-category/hooks/useMainCategory";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { useAppForm } from "@/lib/form";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import type { Category } from "../api/types";
+import { useCreateCategory, useUpdateCategory } from "../hooks/useCategory";
+import { categorySchema, type CategoryFormValues } from "../schemas/category";
+import { CategoryBannerUploader } from "./category-banner-uploader";
 
-const mainCategoryIdField = '_id';
+const mainCategoryIdField = "_id";
 
 type CategoryFormProps = Readonly<{
   initialData: Category | null;
   pageTitle: string;
 }>;
 
-export default function CategoryForm({ initialData, pageTitle }: CategoryFormProps) {
+export default function CategoryForm({
+  initialData,
+  pageTitle,
+}: CategoryFormProps) {
   const router = useRouter();
   const isEdit = !!initialData;
   const createMutation = useCreateCategory();
@@ -32,59 +36,66 @@ export default function CategoryForm({ initialData, pageTitle }: CategoryFormPro
 
   const assignedMainCategory = initialData?.mainCategory;
   const selectedMainCategoryId =
-    typeof assignedMainCategory === 'string'
+    typeof assignedMainCategory === "string"
       ? assignedMainCategory
-      : (assignedMainCategory?.id ?? assignedMainCategory?.[mainCategoryIdField] ?? '');
+      : (assignedMainCategory?.id ??
+        (assignedMainCategory as Record<string, string> | undefined)?.[
+          mainCategoryIdField
+        ] ??
+        "");
   const mainCategories = mainCategoriesQuery.data ?? [];
   const mainCategoryOptions = [
-    { value: 'none', label: 'No main category' },
+    { value: "none", label: "No main category" },
     ...mainCategories.map((mainCategory) => ({
       value: mainCategory.id,
-      label: mainCategory.title
+      label: mainCategory.title,
     })),
     ...(selectedMainCategoryId &&
-    !mainCategories.some((mainCategory) => mainCategory.id === selectedMainCategoryId)
+    !mainCategories.some(
+      (mainCategory) => mainCategory.id === selectedMainCategoryId,
+    )
       ? [
           {
             value: selectedMainCategoryId,
             label:
-              typeof assignedMainCategory === 'object' && assignedMainCategory?.title
+              typeof assignedMainCategory === "object" &&
+              assignedMainCategory?.title
                 ? assignedMainCategory.title
-                : 'Current main category'
-          }
+                : "Current main category",
+          },
         ]
-      : [])
+      : []),
   ];
 
   const form = useAppForm({
     defaultValues: {
-      mainCategory: selectedMainCategoryId || 'none',
-      title: initialData?.title ?? '',
-      slug: initialData?.slug ?? '',
-      description: initialData?.description ?? '',
-      bannerImage: initialData?.bannerImage ?? '',
-      iconImage: initialData?.iconImage ?? '',
+      mainCategory: selectedMainCategoryId || "none",
+      title: initialData?.title ?? "",
+      slug: initialData?.slug ?? "",
+      description: initialData?.description ?? "",
+      bannerImage: initialData?.bannerImage ?? "",
       isActive: initialData?.isActive ?? true,
       isFeatured: initialData?.isFeatured ?? false,
       sortOrder: initialData?.sortOrder ?? 0,
-      tags: initialData?.tags?.join(', ') ?? ''
-    } satisfies CategoryFormValues,
+      tags: initialData?.tags?.join(", ") ?? "",
+    } as unknown as CategoryFormValues,
     validators: { onSubmit: categorySchema },
     onSubmit: ({ value }) => {
       const payload = {
-        mainCategory: value.mainCategory === 'none' ? null : value.mainCategory,
+        mainCategory: value.mainCategory === "none" ? null : value.mainCategory,
         title: value.title,
         slug: value.slug,
         description: value.description || undefined,
         bannerImage: value.bannerImage || undefined,
-        iconImage: value.iconImage || undefined,
         isActive: value.isActive,
         isFeatured: value.isFeatured,
         sortOrder: value.sortOrder,
         tags: value.tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean)
+          ? value.tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+          : [],
       };
 
       if (initialData) {
@@ -92,36 +103,46 @@ export default function CategoryForm({ initialData, pageTitle }: CategoryFormPro
           { id: initialData.id, values: payload },
           {
             onSuccess: () => {
-              toast.success('Category updated');
-              router.push('/dashboard/category');
+              toast.success("Category updated successfully");
+              router.push("/dashboard/category");
             },
             onError: (error) =>
-              toast.error(error instanceof Error ? error.message : "Couldn't update category.")
-          }
+              toast.error(
+                error instanceof Error
+                  ? error.message
+                  : "Couldn't update category.",
+              ),
+          },
         );
       } else {
         createMutation.mutate(payload, {
           onSuccess: () => {
-            toast.success('Category created');
-            router.push('/dashboard/category');
+            toast.success("Category created successfully");
+            router.push("/dashboard/category");
           },
           onError: (error) =>
-            toast.error(error instanceof Error ? error.message : "Couldn't create category.")
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Couldn't create category.",
+            ),
         });
       }
-    }
+    },
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Card className='mx-auto w-full max-w-3xl'>
+    <Card className="mx-auto w-full max-w-3xl">
       <CardHeader>
-        <CardTitle className='text-left text-2xl font-bold'>{pageTitle}</CardTitle>
+        <CardTitle className="text-left text-2xl font-bold">
+          {pageTitle}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form
-          className='space-y-8'
+          className="space-y-8"
           onSubmit={(event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -129,85 +150,114 @@ export default function CategoryForm({ initialData, pageTitle }: CategoryFormPro
           }}
         >
           <FieldGroup>
-            <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
-              <form.AppField name='title'>
-                {(field) => <field.TextField label='Title' required placeholder='Category title' />}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <form.AppField name="title">
+                {(field) => (
+                  <field.TextField
+                    label="Title"
+                    required
+                    placeholder="Category title"
+                  />
+                )}
               </form.AppField>
-              <form.AppField name='slug'>
-                {(field) => <field.TextField label='Slug' required placeholder='audio-stories' />}
+              <form.AppField name="slug">
+                {(field) => (
+                  <field.TextField
+                    label="Slug"
+                    required
+                    placeholder="audio-stories"
+                  />
+                )}
               </form.AppField>
-              <form.AppField name='mainCategory'>
+              <form.AppField name="mainCategory">
                 {(field) => (
                   <field.SelectField
-                    label='Main Category'
+                    label="Main Category"
                     options={mainCategoryOptions}
                     placeholder={
                       mainCategoriesQuery.isPending
-                        ? 'Loading main categories...'
-                        : 'Select main category'
+                        ? "Loading main categories..."
+                        : "Select main category"
                     }
                   />
                 )}
               </form.AppField>
-              <form.AppField name='bannerImage'>
-                {(field) => (
-                  <field.TextField label='Banner image URL' type='url' placeholder='https://...' />
-                )}
-              </form.AppField>
-              <form.AppField name='iconImage'>
-                {(field) => (
-                  <field.TextField label='Icon image URL' type='url' placeholder='https://...' />
-                )}
-              </form.AppField>
-              <form.AppField name='sortOrder'>
-                {(field) => <field.TextField label='Sort order' type='number' min={0} required />}
-              </form.AppField>
-              <form.AppField name='tags'>
+              <form.AppField name="sortOrder">
                 {(field) => (
                   <field.TextField
-                    label='Tags'
-                    placeholder='audio, trending'
-                    description='Separate tags with commas.'
+                    label="Sort order"
+                    type="number"
+                    min={0}
+                    required
                   />
                 )}
               </form.AppField>
+              <div className="md:col-span-2">
+                <form.AppField name="tags">
+                  {(field) => (
+                    <field.TextField
+                      label="Tags"
+                      placeholder="audio, trending"
+                      description="Separate tags with commas."
+                    />
+                  )}
+                </form.AppField>
+              </div>
+
+              {/* Banner Image Uploader */}
+              <div className="md:col-span-2">
+                <form.AppField name="bannerImage">
+                  {(field) => (
+                    <CategoryBannerUploader
+                      value={field.state.value}
+                      onChange={(url) => field.handleChange(url)}
+                      disabled={isPending}
+                    />
+                  )}
+                </form.AppField>
+              </div>
             </div>
-            <form.AppField name='description'>
+
+            <form.AppField name="description">
               {(field) => (
                 <field.TextareaField
-                  label='Description'
+                  label="Description"
                   rows={4}
-                  placeholder='Describe this category'
+                  placeholder="Describe this category"
                 />
               )}
             </form.AppField>
-            <div className='grid gap-4 md:grid-cols-2'>
-              <form.AppField name='isActive'>
+            <div className="grid gap-4 md:grid-cols-2">
+              <form.AppField name="isActive">
                 {(field) => (
                   <field.SwitchField
-                    label='Active'
-                    description='Show this category to users.'
+                    label="Active"
+                    description="Show this category to users."
                     compact
                   />
                 )}
               </form.AppField>
-              <form.AppField name='isFeatured'>
+              <form.AppField name="isFeatured">
                 {(field) => (
                   <field.SwitchField
-                    label='Featured'
-                    description='Highlight this category.'
+                    label="Featured"
+                    description="Highlight this category."
                     compact
                   />
                 )}
               </form.AppField>
             </div>
           </FieldGroup>
-          <div className='flex justify-end gap-2'>
-            <Button type='button' variant='outline' onClick={() => router.back()}>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
               Cancel
             </Button>
-            <LoadingButton loading={isPending} type='submit'>
-              {isEdit ? 'Update Category' : 'Create Category'}
+            <LoadingButton loading={isPending} type="submit">
+              {isEdit ? "Update Category" : "Create Category"}
             </LoadingButton>
           </div>
         </form>

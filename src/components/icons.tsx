@@ -3,6 +3,7 @@ import {
   IconAlertCircle,
   IconAlertTriangle,
   IconArrowRight,
+  IconArrowsSort,
   IconBell,
   IconBold,
   IconBox,
@@ -31,6 +32,7 @@ import {
   IconDeviceLaptop,
   IconDots,
   IconDotsVertical,
+  IconDownload,
   IconEdit,
   IconExternalLink,
   IconEyeOff,
@@ -65,6 +67,7 @@ import {
   IconPizza,
   IconPlus,
   IconProps,
+  IconRefresh,
   IconRosetteDiscountCheck,
   IconSearch,
   IconSelector,
@@ -89,8 +92,8 @@ import {
   IconUsers,
   IconVideo,
   IconCrown,
-  IconX
-} from '@tabler/icons-react';
+  IconX,
+} from "@tabler/icons-react";
 
 export type Icon = React.ComponentType<IconProps>;
 
@@ -110,6 +113,9 @@ export const Icons = {
   externalLink: IconExternalLink,
   help: IconHelpCircle,
   info: IconInfoCircle,
+  refresh: IconRefresh,
+  download: IconDownload,
+  sort: IconArrowsSort,
   spinner: IconLoader2,
   search: IconSearch,
   settings: IconSettings,
@@ -224,5 +230,5 @@ export const Icons = {
   slash: IconSlash,
   calendar: IconCalendar,
   galleryVerticalEnd: IconStack2,
-  moreHorizontal: IconDots
+  moreHorizontal: IconDots,
 };
