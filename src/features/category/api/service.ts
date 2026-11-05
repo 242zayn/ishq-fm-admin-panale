@@ -3,18 +3,20 @@ import type {
   CategoriesApiResponse,
   CategoriesResponse,
   Category,
-  CategoryApiModel,
   CategoryFilters,
-  CategoryMutationApiResponse,
   CategoryMutationResponse,
   CategoryPayload,
-  DeleteCategoryApiResponse,
   DeleteCategoryResponse,
 } from "./types";
 
-function normalizeCategory(category: CategoryApiModel): Category {
-  const { _id, ...details } = category;
-  return { ...details, id: _id };
+function normalizeCategory(category: unknown): Category {
+  if (!category || typeof category !== "object") {
+    return {} as Category;
+  }
+  const raw = category as Record<string, unknown>;
+  const id = (raw._id ?? raw.id ?? "") as string;
+  const { _id: _, ...details } = raw;
+  return { ...details, id } as Category;
 }
 
 export const categoryResource = {
@@ -37,7 +39,7 @@ export const categoryResource = {
     const response = await apiClient<CategoriesApiResponse>(
       `/backend/categories${query ? `?${query}` : ""}`,
     );
-    return { ...response, data: response.data.map(normalizeCategory) };
+    return { ...response, data: (response.data || []).map(normalizeCategory) };
   },
 
   getCategoriesByMainCategory: async (
@@ -54,7 +56,7 @@ export const categoryResource = {
     const response = await apiClient<CategoriesApiResponse>(
       `/backend/categories/main/${encodeURIComponent(mainCategoryId)}${query ? `?${query}` : ""}`,
     );
-    return { ...response, data: response.data.map(normalizeCategory) };
+    return { ...response, data: (response.data || []).map(normalizeCategory) };
   },
 
   getAllCategories: async (): Promise<Category[]> => {
@@ -65,38 +67,47 @@ export const categoryResource = {
     return response.data;
   },
 
-  getCategory: async (id: string): Promise<Category> =>
-    normalizeCategory(
-      await apiClient<CategoryApiModel>(
-        `/backend/categories/${encodeURIComponent(id)}`,
-      ),
-    ),
+  getCategory: async (id: string): Promise<Category> => {
+    const response = await apiClient<Record<string, unknown>>(
+      `/backend/categories/${encodeURIComponent(id)}`,
+    );
+    const doc = response?.category ?? response?.data ?? response;
+    return normalizeCategory(doc);
+  },
 
   createCategory: async (
     data: CategoryPayload,
   ): Promise<CategoryMutationResponse> => {
-    const response = await apiClient<CategoryMutationApiResponse>(
+    const response = await apiClient<Record<string, unknown>>(
       "/backend/categories",
       {
         method: "POST",
         body: JSON.stringify(data),
       },
     );
-    return { ...response, category: normalizeCategory(response.category) };
+    const categoryDoc = response?.category ?? response?.data ?? response;
+    return {
+      message: (response?.message as string) ?? "Category created successfully",
+      category: normalizeCategory(categoryDoc),
+    };
   },
 
   updateCategory: async (
     id: string,
     data: CategoryPayload,
   ): Promise<CategoryMutationResponse> => {
-    const response = await apiClient<CategoryMutationApiResponse>(
+    const response = await apiClient<Record<string, unknown>>(
       `/backend/categories/${encodeURIComponent(id)}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
       },
     );
-    return { ...response, category: normalizeCategory(response.category) };
+    const categoryDoc = response?.category ?? response?.data ?? response;
+    return {
+      message: (response?.message as string) ?? "Category updated successfully",
+      category: normalizeCategory(categoryDoc),
+    };
   },
 
   assignCategoryToMainCategory: async (
@@ -121,10 +132,15 @@ export const categoryResource = {
   },
 
   deleteCategory: async (id: string): Promise<DeleteCategoryResponse> => {
-    const response = await apiClient<DeleteCategoryApiResponse>(
+    const response = await apiClient<Record<string, unknown>>(
       `/backend/categories/${encodeURIComponent(id)}`,
       { method: "DELETE" },
     );
-    return { ...response, deleted: normalizeCategory(response.deleted) };
+    const deletedDoc =
+      response?.deleted ?? response?.category ?? response?.data ?? response;
+    return {
+      message: (response?.message as string) ?? "Category deleted successfully",
+      deleted: normalizeCategory(deletedDoc),
+    };
   },
 };
