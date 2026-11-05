@@ -51,9 +51,9 @@ const ALL_LANGUAGES: { value: StoryLanguage; label: string }[] = [
 ];
 
 const CONTENT_RATINGS = [
-  { value: "ALL", label: "General (All Ages)" },
-  { value: "TEEN", label: "Teen (13+)" },
-  { value: "MATURE", label: "Mature (18+)" },
+  { value: 0, label: "General (All Ages)" },
+  { value: 13, label: "Teen (13+)" },
+  { value: 18, label: "Mature (18+)" },
 ];
 
 interface StoryTranslationState {
@@ -101,8 +101,9 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   const [tags, setTags] = useState<string>(
     initialStory?.tags?.join(", ") ?? "",
   );
-  const [contentRating, setContentRating] = useState<string>(
-    initialStory?.contentRating ?? "ALL",
+  console.log(" initialStory?.contentRating", initialStory?.contentFor);
+  const [contentFor, setContentFor] = useState<number>(
+    initialStory?.contentFor ?? 0,
   );
   const [isFeatured, setIsFeatured] = useState<boolean>(
     initialStory?.isFeatured ?? false,
@@ -110,7 +111,6 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   const [isTrending, setIsTrending] = useState<boolean>(
     initialStory?.isTrending ?? false,
   );
-
   // Audio settings
   const [hasAudio, setHasAudio] = useState<boolean>(
     initialStory?.hasAudio ?? false,
@@ -494,7 +494,8 @@ export function StoryForm({ initialStory }: StoryFormProps) {
       categoryId,
       coverImage: coverImage.trim(),
       bannerImage: bannerImage.trim(),
-      contentRating,
+      // contentRating,
+      contentFor,
       tags: tagArray,
       isFeatured,
       isTrending,
@@ -654,13 +655,13 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 Content Rating *
               </label>
               <Select
-                value={contentRating}
-                onValueChange={(val) => setContentRating(val || "ALL")}
+                value={contentFor}
+                onValueChange={(val) => setContentFor(val || 0)}
               >
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Rating" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent alignItemWithTrigger={false}>
                   {CONTENT_RATINGS.map((rating) => (
                     <SelectItem
                       key={rating.value}
