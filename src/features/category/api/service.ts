@@ -1,64 +1,169 @@
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 import type {
   CategoriesApiResponse,
   CategoriesResponse,
   Category,
-  CategoryApiModel,
   CategoryFilters,
-  CategoryMutationApiResponse,
   CategoryMutationResponse,
   CategoryPayload,
-  DeleteCategoryApiResponse,
-  DeleteCategoryResponse
-} from './types';
+  DeleteCategoryResponse,
+} from "./types";
 
-function normalizeCategory(category: CategoryApiModel): Category {
-  const { _id, ...details } = category;
-  return { ...details, id: _id };
+function normalizeCategory(category: unknown): Category {
+  if (!category || typeof category !== "object") {
+    return {} as Category;
+  }
+  let raw = category as Record<string, unknown>;
+  if (raw.category && typeof raw.category === "object") {
+    raw = raw.category as Record<string, unknown>;
+  } else if (
+    raw.data &&
+    typeof raw.data === "object" &&
+    !Array.isArray(raw.data)
+  ) {
+    raw = raw.data as Record<string, unknown>;
+  }
+  const id = (raw._id ?? raw.id ?? "") as string;
+  const { _id: _, ...details } = raw;
+  return { ...details, id } as Category;
 }
 
 export const categoryResource = {
-  getCategories: async (params: CategoryFilters = {}): Promise<CategoriesResponse> => {
+  getCategories: async (
+    params: CategoryFilters = {},
+  ): Promise<CategoriesResponse> => {
     const searchParams = new URLSearchParams();
-    if (params.page !== undefined) searchParams.set('page', String(params.page));
-    if (params.limit !== undefined) searchParams.set('limit', String(params.limit));
-    if (params.search) searchParams.set('search', params.search);
+    if (params.page !== undefined)
+      searchParams.set("page", String(params.page));
+    if (params.limit !== undefined)
+      searchParams.set("limit", String(params.limit));
+    if (params.search) searchParams.set("search", params.search);
+    if (params.mainCategory)
+      searchParams.set("mainCategory", params.mainCategory);
+    if (params.isActive !== undefined)
+      searchParams.set("isActive", String(params.isActive));
+    if (params.isFeatured !== undefined)
+      searchParams.set("isFeatured", String(params.isFeatured));
     const query = searchParams.toString();
     const response = await apiClient<CategoriesApiResponse>(
-      `/backend/categories${query ? `?${query}` : ''}`
+      `/backend/categories${query ? `?${query}` : ""}`,
     );
-    return { ...response, data: response.data.map(normalizeCategory) };
+    return { ...response, data: (response.data || []).map(normalizeCategory) };
   },
 
-  getCategory: async (id: string): Promise<Category> =>
-    normalizeCategory(
-      await apiClient<CategoryApiModel>(`/backend/categories/${encodeURIComponent(id)}`)
-    ),
+  getCategoriesByMainCategory: async (
+    mainCategoryId: string,
+    params: CategoryFilters = {},
+  ): Promise<CategoriesResponse> => {
+    const searchParams = new URLSearchParams();
+    if (params.page !== undefined)
+      searchParams.set("page", String(params.page));
+    if (params.limit !== undefined)
+      searchParams.set("limit", String(params.limit));
+    if (params.search) searchParams.set("search", params.search);
+    const query = searchParams.toString();
+    const response = await apiClient<CategoriesApiResponse>(
+      `/backend/categories/main/${encodeURIComponent(mainCategoryId)}${query ? `?${query}` : ""}`,
+    );
+    return { ...response, data: (response.data || []).map(normalizeCategory) };
+  },
 
-  createCategory: async (data: CategoryPayload): Promise<CategoryMutationResponse> => {
-    const response = await apiClient<CategoryMutationApiResponse>('/backend/categories', {
-      method: 'POST',
-      body: JSON.stringify(data)
+  getAllCategories: async (): Promise<Category[]> => {
+    const response = await categoryResource.getCategories({
+      page: 1,
+      limit: 200,
     });
-    return { ...response, category: normalizeCategory(response.category) };
+    return response.data;
   },
 
-  updateCategory: async (id: string, data: CategoryPayload): Promise<CategoryMutationResponse> => {
-    const response = await apiClient<CategoryMutationApiResponse>(
+  getCategory: async (id: string): Promise<Category> => {
+    const response = await apiClient<Record<string, unknown>>(
+      `/backend/categories/${encodeURIComponent(id)}`,
+    );
+    const doc = response?.category ?? response?.data ?? response;
+    return normalizeCategory(doc);
+  },
+
+  createCategory: async (
+    data: CategoryPayload,
+  ): Promise<CategoryMutationResponse> => {
+    const response = await apiClient<Record<string, unknown>>(
+      "/backend/categories",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+    );
+    const categoryDoc = response?.category ?? response?.data ?? response;
+    return {
+      message: (response?.message as string) ?? "Category created successfully",
+      category: normalizeCategory(categoryDoc),
+    };
+  },
+
+  updateCategory: async (
+    id: string,
+    data: CategoryPayload,
+  ): Promise<CategoryMutationResponse> => {
+    const response = await apiClient<Record<string, unknown>>(
       `/backend/categories/${encodeURIComponent(id)}`,
       {
-        method: 'PATCH',
-        body: JSON.stringify(data)
-      }
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
     );
-    return { ...response, category: normalizeCategory(response.category) };
+    const categoryDoc = response?.category ?? response?.data ?? response;
+    return {
+      message: (response?.message as string) ?? "Category updated successfully",
+      category: normalizeCategory(categoryDoc),
+    };
+  },
+
+  uploadBanner: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await apiClient<{
+      success: boolean;
+      message: string;
+      data: { url: string; publicId?: string };
+    }>("/backend/uploads/image", {
+      method: "POST",
+      body: formData,
+    });
+    return response.data?.url ?? "";
+  },
+
+  assignCategoryToMainCategory: async (
+    categoryId: string,
+    mainCategoryId: string | null,
+    sortOrder?: number,
+  ): Promise<CategoryMutationResponse> => {
+    return categoryResource.updateCategory(categoryId, {
+      mainCategory: mainCategoryId,
+      ...(sortOrder !== undefined ? { sortOrder } : {}),
+    });
+  },
+
+  reorderCategories: async (
+    items: { id: string; sortOrder: number }[],
+  ): Promise<CategoryMutationResponse[]> => {
+    return Promise.all(
+      items.map((item) =>
+        categoryResource.updateCategory(item.id, { sortOrder: item.sortOrder }),
+      ),
+    );
   },
 
   deleteCategory: async (id: string): Promise<DeleteCategoryResponse> => {
-    const response = await apiClient<DeleteCategoryApiResponse>(
+    const response = await apiClient<Record<string, unknown>>(
       `/backend/categories/${encodeURIComponent(id)}`,
-      { method: 'DELETE' }
+      { method: "DELETE" },
     );
-    return { ...response, deleted: normalizeCategory(response.deleted) };
-  }
+    const deletedDoc =
+      response?.deleted ?? response?.category ?? response?.data ?? response;
+    return {
+      message: (response?.message as string) ?? "Category deleted successfully",
+      deleted: normalizeCategory(deletedDoc),
+    };
+  },
 };

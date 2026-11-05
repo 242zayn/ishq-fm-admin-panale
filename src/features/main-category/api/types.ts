@@ -1,3 +1,5 @@
+import { Category } from "@/features/category/api/types";
+
 export type MainCategory = {
   id: string;
   title: string;
@@ -5,15 +7,17 @@ export type MainCategory = {
   description?: string;
   bannerImage?: string;
   iconImage?: string;
+  totalStories?: number;
   isActive: boolean;
   isFeatured: boolean;
   sortOrder: number;
   tags: string[];
   createdAt?: string;
   updatedAt?: string;
+  categories?: Category[];
 };
 
-export type MainCategoryApiModel = Omit<MainCategory, 'id'> & {
+export type MainCategoryApiModel = Omit<MainCategory, "id"> & {
   _id: string;
 };
 
@@ -38,7 +42,7 @@ export type MainCategoriesResponse = {
   };
 };
 
-export type MainCategoriesApiResponse = Omit<MainCategoriesResponse, 'data'> & {
+export type MainCategoriesApiResponse = Omit<MainCategoriesResponse, "data"> & {
   data: MainCategoryApiModel[];
 };
 
@@ -47,7 +51,10 @@ export type MainCategoryMutationResponse = {
   mainCategory: MainCategory;
 };
 
-export type MainCategoryMutationApiResponse = Omit<MainCategoryMutationResponse, 'mainCategory'> & {
+export type MainCategoryMutationApiResponse = Omit<
+  MainCategoryMutationResponse,
+  "mainCategory"
+> & {
   mainCategory: MainCategoryApiModel;
 };
 
@@ -56,13 +63,16 @@ export type DeleteMainCategoryResponse = {
   deleted: MainCategory;
 };
 
-export type DeleteMainCategoryApiResponse = Omit<DeleteMainCategoryResponse, 'deleted'> & {
+export type DeleteMainCategoryApiResponse = Omit<
+  DeleteMainCategoryResponse,
+  "deleted"
+> & {
   deleted: MainCategoryApiModel;
 };
 
 export type MainCategoryPayload = {
-  title: string;
-  slug: string;
+  title?: string;
+  slug?: string;
   description?: string;
   bannerImage?: string;
   iconImage?: string;

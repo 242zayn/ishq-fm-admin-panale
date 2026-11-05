@@ -65,7 +65,7 @@ export default function LoginForm() {
         </section>
 
         <section className='flex items-center justify-center p-6 sm:p-10'>
-          <Card className='w-full max-w-md border-0 bg-transparent shadow-none'>
+          <Card className='w-full px-4 max-w-md border-0 bg-transparent shadow-none'>
             <CardHeader className='gap-3 px-0'>
               <div className='text-primary flex items-center gap-2 lg:hidden'>
                 <Icons.music aria-hidden />
@@ -78,7 +78,7 @@ export default function LoginForm() {
                 </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className='px-0'>
+            <CardContent className='px-4'>
               <form
                 className='flex flex-col gap-5'
                 onSubmit={(event) => {
