@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import type { Category } from "../api/types";
 import { useCreateCategory, useUpdateCategory } from "../hooks/useCategory";
 import { categorySchema, type CategoryFormValues } from "../schemas/category";
+import { CategoryBannerUploader } from "./category-banner-uploader";
 
 const mainCategoryIdField = "_id";
 
@@ -73,12 +74,11 @@ export default function CategoryForm({
       slug: initialData?.slug ?? "",
       description: initialData?.description ?? "",
       bannerImage: initialData?.bannerImage ?? "",
-      iconImage: initialData?.iconImage ?? "",
       isActive: initialData?.isActive ?? true,
       isFeatured: initialData?.isFeatured ?? false,
       sortOrder: initialData?.sortOrder ?? 0,
       tags: initialData?.tags?.join(", ") ?? "",
-    } satisfies CategoryFormValues,
+    } as unknown as CategoryFormValues,
     validators: { onSubmit: categorySchema },
     onSubmit: ({ value }) => {
       const payload = {
@@ -87,14 +87,15 @@ export default function CategoryForm({
         slug: value.slug,
         description: value.description || undefined,
         bannerImage: value.bannerImage || undefined,
-        iconImage: value.iconImage || undefined,
         isActive: value.isActive,
         isFeatured: value.isFeatured,
         sortOrder: value.sortOrder,
         tags: value.tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+          ? value.tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+          : [],
       };
 
       if (initialData) {
@@ -102,7 +103,7 @@ export default function CategoryForm({
           { id: initialData.id, values: payload },
           {
             onSuccess: () => {
-              toast.success("Category updated");
+              toast.success("Category updated successfully");
               router.push("/dashboard/category");
             },
             onError: (error) =>
@@ -116,7 +117,7 @@ export default function CategoryForm({
       } else {
         createMutation.mutate(payload, {
           onSuccess: () => {
-            toast.success("Category created");
+            toast.success("Category created successfully");
             router.push("/dashboard/category");
           },
           onError: (error) =>
@@ -181,24 +182,6 @@ export default function CategoryForm({
                   />
                 )}
               </form.AppField>
-              <form.AppField name="bannerImage">
-                {(field) => (
-                  <field.TextField
-                    label="Banner image URL"
-                    type="url"
-                    placeholder="https://..."
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="iconImage">
-                {(field) => (
-                  <field.TextField
-                    label="Icon image URL"
-                    type="url"
-                    placeholder="https://..."
-                  />
-                )}
-              </form.AppField>
               <form.AppField name="sortOrder">
                 {(field) => (
                   <field.TextField
@@ -209,16 +192,32 @@ export default function CategoryForm({
                   />
                 )}
               </form.AppField>
-              <form.AppField name="tags">
-                {(field) => (
-                  <field.TextField
-                    label="Tags"
-                    placeholder="audio, trending"
-                    description="Separate tags with commas."
-                  />
-                )}
-              </form.AppField>
+              <div className="md:col-span-2">
+                <form.AppField name="tags">
+                  {(field) => (
+                    <field.TextField
+                      label="Tags"
+                      placeholder="audio, trending"
+                      description="Separate tags with commas."
+                    />
+                  )}
+                </form.AppField>
+              </div>
+
+              {/* Banner Image Uploader */}
+              <div className="md:col-span-2">
+                <form.AppField name="bannerImage">
+                  {(field) => (
+                    <CategoryBannerUploader
+                      value={field.state.value}
+                      onChange={(url) => field.handleChange(url)}
+                      disabled={isPending}
+                    />
+                  )}
+                </form.AppField>
+              </div>
             </div>
+
             <form.AppField name="description">
               {(field) => (
                 <field.TextareaField

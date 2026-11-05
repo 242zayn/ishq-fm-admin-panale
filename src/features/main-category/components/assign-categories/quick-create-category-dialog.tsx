@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useCreateCategory } from "@/features/category/hooks/useCategory";
+import { CategoryBannerUploader } from "@/features/category/components/category-banner-uploader";
 import { toast } from "sonner";
 
 interface QuickCreateCategoryDialogProps {
@@ -33,7 +34,6 @@ export function QuickCreateCategoryDialog({
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [iconImage, setIconImage] = useState("");
   const [bannerImage, setBannerImage] = useState("");
   const [tags, setTags] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -65,7 +65,6 @@ export function QuickCreateCategoryDialog({
     setTitle("");
     setSlug("");
     setDescription("");
-    setIconImage("");
     setBannerImage("");
     setTags("");
     setIsActive(true);
@@ -94,7 +93,6 @@ export function QuickCreateCategoryDialog({
         title: title.trim(),
         slug: slug.trim(),
         description: description.trim() || undefined,
-        iconImage: iconImage.trim() || undefined,
         bannerImage: bannerImage.trim() || undefined,
         mainCategory: mainCategoryId,
         isActive,
@@ -122,7 +120,7 @@ export function QuickCreateCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] border-border/60 bg-card p-6 shadow-2xl rounded-2xl">
+      <DialogContent className="sm:max-w-[500px] border-border/60 bg-card p-6 shadow-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Add Category to{" "}
@@ -167,39 +165,12 @@ export function QuickCreateCategoryDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label
-                htmlFor="quick-cat-icon"
-                className="text-xs font-semibold text-muted-foreground"
-              >
-                Icon Image URL
-              </label>
-              <Input
-                id="quick-cat-icon"
-                placeholder="https://..."
-                value={iconImage}
-                onChange={(e) => setIconImage(e.target.value)}
-                className="h-9"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label
-                htmlFor="quick-cat-banner"
-                className="text-xs font-semibold text-muted-foreground"
-              >
-                Banner Image URL
-              </label>
-              <Input
-                id="quick-cat-banner"
-                placeholder="https://..."
-                value={bannerImage}
-                onChange={(e) => setBannerImage(e.target.value)}
-                className="h-9"
-              />
-            </div>
-          </div>
+          {/* Banner Image Uploader */}
+          <CategoryBannerUploader
+            value={bannerImage}
+            onChange={setBannerImage}
+            disabled={createMutation.isPending}
+          />
 
           <div className="space-y-1.5">
             <label

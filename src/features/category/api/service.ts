@@ -119,6 +119,20 @@ export const categoryResource = {
     };
   },
 
+  uploadBanner: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await apiClient<{
+      success: boolean;
+      message: string;
+      data: { url: string; publicId?: string };
+    }>("/backend/uploads/image", {
+      method: "POST",
+      body: formData,
+    });
+    return response.data?.url ?? "";
+  },
+
   assignCategoryToMainCategory: async (
     categoryId: string,
     mainCategoryId: string | null,
