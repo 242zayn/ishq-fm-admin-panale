@@ -1,9 +1,8 @@
+import { MainCategory } from "@/features/main-category/api/types";
+
 export type Category = {
   id: string;
-  mainCategory?:
-    | { id?: string; _id?: string; title?: string; slug?: string }
-    | string
-    | null;
+  mainCategory?: MainCategory;
   title: string;
   slug: string;
   description?: string;
