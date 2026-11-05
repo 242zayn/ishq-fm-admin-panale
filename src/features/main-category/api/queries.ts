@@ -24,10 +24,10 @@ export const allMainCategoriesQueryOptions = () =>
         page: 1,
         limit: pageSize,
       });
-      const { totalPages } = firstPage.meta.pagination;
+      const totalPages = firstPage?.meta?.pagination?.totalPages ?? 1;
 
       if (totalPages <= 1) {
-        return firstPage.data;
+        return firstPage.data || [];
       }
 
       const remainingPages = await Promise.all(
@@ -39,7 +39,7 @@ export const allMainCategoriesQueryOptions = () =>
         ),
       );
 
-      return [firstPage, ...remainingPages].flatMap((page) => page.data);
+      return [firstPage, ...remainingPages].flatMap((page) => page.data || []);
     },
   });
 

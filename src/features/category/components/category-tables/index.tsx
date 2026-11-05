@@ -26,6 +26,8 @@ export function CategoryTable() {
     throw error;
   }
 
+  console.log("table data is that", data);
+
   const { table } = useDataTable({
     data: data?.data ?? [],
     columns,

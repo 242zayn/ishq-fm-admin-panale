@@ -20,7 +20,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Icons } from "@/components/icons";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { mainCategoryKeys } from "@/features/main-category/api/queries";
+import { categoryKeys } from "@/features/category/api/queries";
 
 import type { MainCategory } from "../../api/types";
 import type { Category } from "@/features/category/api/types";
@@ -46,8 +47,6 @@ import { EditMainCategoryDialog } from "./edit-main-category-dialog";
 interface AssignCategoriesWorkspaceProps {
   mainCategory: MainCategory;
 }
-
-console.log("mainCategoryKeys", mainCategoryKeys);
 
 export function AssignCategoriesWorkspace({
   mainCategory,
@@ -91,7 +90,7 @@ export function AssignCategoriesWorkspace({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -99,9 +98,10 @@ export function AssignCategoriesWorkspace({
     }),
   );
 
-  // Assigned categories list
+  // Assigned categories sorted by sortOrder
   const assignedCategories: Category[] = useMemo(() => {
-    return assignedData?.data ?? [];
+    const list = assignedData?.data ?? [];
+    return [...list].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [assignedData]);
 
   // Set of assigned category IDs for quick lookup
@@ -109,7 +109,7 @@ export function AssignCategoriesWorkspace({
     return new Set(assignedCategories.map((c) => c.id));
   }, [assignedCategories]);
 
-  // Available categories list filtered
+  // Filtered available categories
   const filteredAvailableCategories = useMemo(() => {
     const list = allCategories ?? [];
     const query = searchQuery.trim().toLowerCase();
@@ -117,16 +117,17 @@ export function AssignCategoriesWorkspace({
     return list.filter((cat) => {
       const isAssignedToThis = assignedIds.has(cat.id);
 
-      if (filterMode === "unassigned") {
-        // Unassigned or assigned to someone else
-        if (isAssignedToThis) return false;
-      } else if (filterMode === "assigned") {
-        if (!isAssignedToThis) return false;
+      // Filter by tab
+      if (filterMode === "unassigned" && cat.mainCategory) {
+        return false;
+      }
+      if (filterMode === "assigned" && !isAssignedToThis) {
+        return false;
       }
 
+      // Filter by search query
       if (!query) return true;
-
-      const titleMatch = cat.title.toLowerCase().includes(query);
+      const titleMatch = cat.title?.toLowerCase().includes(query);
       const slugMatch = cat.slug?.toLowerCase().includes(query);
       const tagMatch = cat.tags?.some((t) => t.toLowerCase().includes(query));
 
@@ -139,6 +140,18 @@ export function AssignCategoriesWorkspace({
     useDroppable({
       id: "assigned-drop-zone",
     });
+
+  // Helper to invalidate and refetch all related categories and main categories
+  const syncQueries = () => {
+    refetchAssigned();
+    refetchAll();
+    queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+    queryClient.invalidateQueries({
+      queryKey: mainCategoryKeys.all,
+      refetchType: "all",
+    });
+    queryClient.refetchQueries({ queryKey: mainCategoryKeys.all });
+  };
 
   // Assign category
   const handleAssignCategory = (category: Category) => {
@@ -162,9 +175,7 @@ export function AssignCategoriesWorkspace({
           toast.success(
             `Assigned "${category.title}" to ${mainCategory.title}`,
           );
-          refetchAssigned();
-          refetchAll();
-          queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
+          syncQueries();
         },
         onError: (err) => {
           toast.error(
@@ -187,9 +198,7 @@ export function AssignCategoriesWorkspace({
           toast.success(
             `Removed "${category.title}" from ${mainCategory.title}`,
           );
-          refetchAssigned();
-          refetchAll();
-          queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
+          syncQueries();
         },
         onError: (err) => {
           toast.error(
@@ -210,8 +219,7 @@ export function AssignCategoriesWorkspace({
     reorderMutation.mutate(reorderedPayload, {
       onSuccess: () => {
         toast.success("Categories order updated");
-        refetchAssigned();
-        queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
+        syncQueries();
       },
       onError: (err) => {
         toast.error(
@@ -234,7 +242,7 @@ export function AssignCategoriesWorkspace({
     handleReorder(newItems);
   };
 
-  // Drag handlers
+  // DnD Handlers
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const activeData = active.data.current;
@@ -294,54 +302,40 @@ export function AssignCategoriesWorkspace({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-col gap-5">
-        {/* Top Header / Breadcrumb matching screenshot style */}
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 shadow-xs backdrop-blur-sm">
-          <div className="flex items-center gap-3.5">
+      <div className="flex flex-1 flex-col gap-6">
+        {/* Breadcrumb / Top Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/40 pb-4">
+          <div className="flex items-center gap-3">
             <Link
               href="/dashboard/main-category"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              title="Back to Main Categories"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon" }),
+                "h-9 w-9 rounded-lg border-border/50 text-muted-foreground hover:text-foreground",
+              )}
             >
               <Icons.chevronLeft className="h-4 w-4" />
+              <span className="sr-only">Back to Main Categories</span>
             </Link>
-
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
-                {mainCategory.iconImage || mainCategory.bannerImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={mainCategory.iconImage || mainCategory.bannerImage}
-                    alt={mainCategory.title}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Icons.categories className="h-5 w-5 text-muted-foreground" />
-                )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight">
+                  {mainCategory.title}
+                </h1>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "rounded-full px-2.5 py-0.5 text-xs font-medium border-0",
+                    mainCategory.isActive
+                      ? "bg-emerald-500/15 text-emerald-400"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {mainCategory.isActive ? "Active" : "Inactive"}
+                </Badge>
               </div>
-
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold text-foreground md:text-xl">
-                    {mainCategory.title}
-                  </h1>
-                  <Badge
-                    variant="outline"
-                    className={
-                      mainCategory.isActive
-                        ? "rounded-full border-emerald-800/60 bg-emerald-950/60 px-2 py-0 text-[11px] text-emerald-400"
-                        : "rounded-full border-zinc-700 bg-zinc-800/80 px-2 py-0 text-[11px] text-zinc-400"
-                    }
-                  >
-                    {mainCategory.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Slug: {mainCategory.slug}</span>
-                  <span>•</span>
-                  <span>Placement: {mainCategory.sortOrder ?? 0}</span>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Manage assigned categories and drag to reorder their appearance
+              </p>
             </div>
           </div>
 
@@ -350,7 +344,7 @@ export function AssignCategoriesWorkspace({
               variant="outline"
               size="sm"
               onClick={() => setEditMainCategoryOpen(true)}
-              className="h-9 rounded-xl border-border/60 text-xs font-medium"
+              className="h-9 rounded-lg border-border/50 text-xs font-medium"
             >
               <Icons.edit className="mr-1.5 h-3.5 w-3.5" />
               Edit Main Category
@@ -358,7 +352,7 @@ export function AssignCategoriesWorkspace({
             <Button
               size="sm"
               onClick={() => setNewCategoryOpen(true)}
-              className="h-9 rounded-xl text-xs font-medium shadow-sm"
+              className="h-9 rounded-lg bg-primary text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
             >
               <Icons.add className="mr-1.5 h-3.5 w-3.5" />
               New Category
@@ -366,39 +360,40 @@ export function AssignCategoriesWorkspace({
           </div>
         </div>
 
-        {/* Two-Panel Drag and Drop Layout matching Image 2 */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* LEFT PANEL: Available Categories */}
-          <div className="flex flex-col rounded-2xl border border-border/50 bg-card/60 p-5 shadow-xs backdrop-blur-sm lg:col-span-7">
-            {/* Header with Title and Search */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
-              <div>
-                <h2 className="text-base font-bold text-foreground md:text-lg">
-                  Available Games / Categories
+        {/* 2-Column Split Workspace */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* LEFT PANEL: Available Categories (7 cols) */}
+          <section className="lg:col-span-7 flex flex-col rounded-2xl border border-border/50 bg-card/40 p-4 backdrop-blur-sm shadow-sm min-h-[620px]">
+            {/* Header + Search */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold tracking-tight">
+                  Available Categories
                 </h2>
-                <p className="text-xs text-muted-foreground">
-                  Drag cards to the right panel or click &apos;+&apos; to assign
-                </p>
+                <Badge
+                  variant="secondary"
+                  className="rounded-full px-2 py-0 text-xs font-medium"
+                >
+                  {filteredAvailableCategories.length}
+                </Badge>
               </div>
 
-              {/* Search Bar matching screenshot */}
+              {/* Search Bar */}
               <div className="relative w-full sm:w-64">
-                <Icons.search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Icons.search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search games / categories..."
+                  placeholder="Search categories..."
                   value={searchQuery}
                   onChange={(e) => {
                     const val = e.target.value;
-                    startTransition(() => {
-                      setSearchQuery(val);
-                    });
+                    startTransition(() => setSearchQuery(val));
                   }}
-                  className="h-8 w-full rounded-lg bg-background/80 pl-8 text-xs"
+                  className="h-8 w-full rounded-lg bg-background/80 pl-8 pr-7 text-xs focus-visible:ring-1"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     <Icons.close className="h-3 w-3" />
                   </button>
@@ -406,94 +401,101 @@ export function AssignCategoriesWorkspace({
               </div>
             </div>
 
-            {/* Filter Pills */}
-            <div className="mb-4 flex items-center gap-1.5 border-b border-border/40 pb-3">
-              <button
-                type="button"
-                onClick={() => setFilterMode("all")}
-                className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
-                  filterMode === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                )}
-              >
-                All ({allCategories?.length ?? 0})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterMode("unassigned")}
-                className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
-                  filterMode === "unassigned"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                )}
-              >
-                Unassigned Only
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterMode("assigned")}
-                className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
-                  filterMode === "assigned"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                )}
-              >
-                Assigned ({assignedCategories.length})
-              </button>
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-1.5 py-3">
+              {(
+                [
+                  { id: "all", label: "All" },
+                  { id: "unassigned", label: "Unassigned" },
+                  { id: "assigned", label: "Assigned" },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setFilterMode(tab.id)}
+                  className={cn(
+                    "rounded-lg px-3 py-1 text-xs font-medium transition-colors",
+                    filterMode === tab.id
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {/* Grid of Cards */}
-            {isLoading ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-28 w-full rounded-2xl" />
-                ))}
-              </div>
-            ) : filteredAvailableCategories.length === 0 ? (
-              <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-muted-foreground">
-                <Icons.categories className="mb-2 h-8 w-8 opacity-40" />
-                <p className="text-sm font-medium">No categories found</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {searchQuery
-                    ? `No categories matching "${searchQuery}"`
-                    : "Create a new category using the button above"}
-                </p>
-              </div>
-            ) : (
-              <div className="grid max-h-[600px] grid-cols-2 gap-3 overflow-y-auto p-1 sm:grid-cols-3 xl:grid-cols-4">
-                {filteredAvailableCategories.map((cat) => (
-                  <AvailableCard
-                    key={cat.id}
-                    category={cat}
-                    isAssigned={assignedIds.has(cat.id)}
-                    onAssign={handleAssignCategory}
-                    onUnassign={handleUnassignCategory}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+            {/* Grid of Available Category Cards */}
+            <div className="flex-1 overflow-y-auto pr-1">
+              {isLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-1">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-28 rounded-xl" />
+                  ))}
+                </div>
+              ) : filteredAvailableCategories.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 text-center p-6 border border-dashed border-border/40 rounded-xl">
+                  <Icons.product className="h-10 w-10 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm font-medium text-foreground">
+                    No categories found
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                    {searchQuery
+                      ? "Try searching for a different keyword or clearing filters."
+                      : "Create a new category to get started."}
+                  </p>
+                  {searchQuery && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSearchQuery("")}
+                      className="mt-3 text-xs"
+                    >
+                      Clear Search
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-1">
+                  {filteredAvailableCategories.map((cat) => {
+                    const isAssigned = assignedIds.has(cat.id);
+                    return (
+                      <AvailableCard
+                        key={cat.id}
+                        category={cat}
+                        isAssigned={isAssigned}
+                        onAssign={() => handleAssignCategory(cat)}
+                        onUnassign={() => handleUnassignCategory(cat)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
 
-          {/* RIGHT PANEL: Assigned Categories */}
-          <div
+          {/* RIGHT PANEL: Assigned Categories (5 cols) */}
+          <section
             ref={setRightDropRef}
             className={cn(
-              "flex flex-col rounded-2xl border bg-card/60 p-5 shadow-xs backdrop-blur-sm transition-colors duration-200 lg:col-span-5",
+              "lg:col-span-5 flex flex-col rounded-2xl border p-4 backdrop-blur-sm shadow-sm min-h-[620px] transition-colors",
               isOverRightPanel
                 ? "border-primary/80 bg-primary/5 ring-2 ring-primary/20"
-                : "border-border/50",
+                : "border-border/50 bg-card/40",
             )}
           >
-            {/* Header matching Image 2 */}
-            <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-4">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground md:text-lg">
-                  Assigned Games ({assignedCategories.length})
+                <h2 className="text-base font-semibold tracking-tight">
+                  Assigned Categories
                 </h2>
+                <Badge
+                  variant="outline"
+                  className="rounded-full bg-primary/10 text-primary border-primary/20 px-2 py-0 text-xs font-semibold"
+                >
+                  {assignedCategories.length}
+                </Badge>
               </div>
 
               <div className="flex items-center gap-1.5">
@@ -501,7 +503,7 @@ export function AssignCategoriesWorkspace({
                   variant="ghost"
                   size="icon"
                   onClick={() => setEditMainCategoryOpen(true)}
-                  className="h-8 w-8 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
                   title="Edit Main Category"
                 >
                   <Icons.edit className="h-4 w-4" />
@@ -509,7 +511,7 @@ export function AssignCategoriesWorkspace({
                 <Button
                   size="sm"
                   onClick={() => setNewCategoryOpen(true)}
-                  className="h-8 rounded-lg px-2.5 text-xs font-semibold"
+                  className="h-8 rounded-lg bg-primary text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                   <Icons.add className="mr-1 h-3.5 w-3.5" />
                   New Category
@@ -517,29 +519,38 @@ export function AssignCategoriesWorkspace({
               </div>
             </div>
 
-            {/* Droppable and Sortable List */}
-            <div className="mt-4 flex flex-1 flex-col">
-              {isAssignedLoading ? (
-                <div className="space-y-2.5">
+            {/* List instructions banner */}
+            <div className="mt-3 mb-2 flex items-center justify-between text-[11px] text-muted-foreground px-1">
+              <span>Drag to reorder placement</span>
+              <span>{assignedCategories.length} items</span>
+            </div>
+
+            {/* Sortable List of Assigned Categories */}
+            <div className="flex-1 overflow-y-auto pr-1">
+              {isLoading ? (
+                <div className="space-y-2 p-1">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-14 w-full rounded-xl" />
+                    <Skeleton key={i} className="h-16 rounded-xl" />
                   ))}
                 </div>
               ) : assignedCategories.length === 0 ? (
                 <div
                   className={cn(
-                    "flex h-80 flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-colors",
+                    "flex flex-col items-center justify-center h-80 text-center p-6 border-2 border-dashed rounded-xl transition-colors",
                     isOverRightPanel
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border/60 text-muted-foreground",
+                      ? "border-primary bg-primary/10"
+                      : "border-border/40 bg-background/20",
                   )}
                 >
-                  <Icons.gripVertical className="mb-2 h-8 w-8 opacity-40" />
-                  <p className="text-sm font-semibold">Drop categories here</p>
-                  <p className="mt-1 max-w-xs text-xs text-muted-foreground">
-                    Drag available cards from the left panel or click the
-                    &apos;+&apos; button to assign categories to this main
-                    category.
+                  <div className="rounded-full bg-accent/60 p-3 mb-3">
+                    <Icons.sort className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    Drop categories here
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                    Drag items from the left panel or click the plus button on
+                    any category card to assign it here.
                   </p>
                 </div>
               ) : (
@@ -547,7 +558,7 @@ export function AssignCategoriesWorkspace({
                   items={assignedCategories.map((c) => c.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="max-h-[600px] space-y-2.5 overflow-y-auto p-1">
+                  <div className="space-y-2 p-1">
                     {assignedCategories.map((cat, idx) => (
                       <AssignedItem
                         key={cat.id}
@@ -563,18 +574,7 @@ export function AssignCategoriesWorkspace({
                 </SortableContext>
               )}
             </div>
-
-            {/* Bottom info helper */}
-            {assignedCategories.length > 0 && (
-              <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-3 text-xs text-muted-foreground">
-                <span>Drag the handle on the left to reorder</span>
-                <span className="font-medium text-foreground">
-                  {assignedCategories.length} item
-                  {assignedCategories.length === 1 ? "" : "s"}
-                </span>
-              </div>
-            )}
-          </div>
+          </section>
         </div>
 
         {/* Drag Overlays */}
@@ -592,21 +592,14 @@ export function AssignCategoriesWorkspace({
           onOpenChange={setNewCategoryOpen}
           mainCategoryId={mainCategory.id}
           mainCategoryTitle={mainCategory.title}
-          onCreated={() => {
-            refetchAssigned();
-            refetchAll();
-            queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
-          }}
+          onCreated={syncQueries}
         />
 
         <EditMainCategoryDialog
           open={editMainCategoryOpen}
           onOpenChange={setEditMainCategoryOpen}
           mainCategory={mainCategory}
-          onUpdated={() => {
-            refetchAssigned();
-            queryClient.invalidateQueries({ queryKey: mainCategoryKeys.all });
-          }}
+          onUpdated={syncQueries}
         />
       </div>
     </DndContext>

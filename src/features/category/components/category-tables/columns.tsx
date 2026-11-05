@@ -82,11 +82,6 @@ export const columns: ColumnDef<Category>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "sortOrder",
-    header: "ORDER",
-    enableSorting: false,
-  },
-  {
     accessorKey: "tags",
     header: "TAGS",
     cell: ({ cell }) => (cell.getValue<string[]>() ?? []).join(", "),
