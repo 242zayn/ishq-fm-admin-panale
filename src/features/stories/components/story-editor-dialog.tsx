@@ -469,7 +469,7 @@ function StoryEditorForm({
       bannerImage: story?.bannerImage ?? "",
       categoryId: categoryId || "none",
       tags: story?.tags?.join(", ") ?? "",
-      contentRating: story?.contentRating ?? "ALL",
+      contentRating: (story as any)?.contentRating ?? (story?.contentFor ? String(story.contentFor) : "ALL"),
       hasAudio: story?.hasAudio ?? false,
       audioUrl: story?.audioTrack?.audioUrl ?? "",
       audioDurationSeconds: story?.audioTrack?.durationSeconds ?? 0,
@@ -491,7 +491,7 @@ function StoryEditorForm({
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
-        contentRating: value.contentRating,
+        contentRating: Number(value.contentRating) || undefined,
         hasAudio: value.hasAudio,
         audioTrack: value.hasAudio
           ? {
@@ -550,6 +550,7 @@ function StoryEditorForm({
 
       const payload: StoryPayload = {
         ...sharedValues,
+        contentFor: Number(value.contentRating) || 0,
         title: defaultTranslation.title.trim(),
         synopsis: defaultTranslation.synopsis.trim(),
         authorName: defaultTranslation.authorName.trim(),

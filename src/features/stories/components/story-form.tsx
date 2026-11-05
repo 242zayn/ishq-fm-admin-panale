@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -89,7 +89,9 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   const [categoryId, setCategoryId] = useState<string>(() => {
     const raw = initialStory?.categoryId;
     if (typeof raw === "string") return raw;
-    if (typeof raw === "object" && raw?._id) return raw._id;
+    if (typeof raw === "object" && raw) {
+      return (raw as any)._id || (raw as any).id || "";
+    }
     return "";
   });
   const [coverImage, setCoverImage] = useState<string>(
@@ -101,10 +103,15 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   const [tags, setTags] = useState<string>(
     initialStory?.tags?.join(", ") ?? "",
   );
-  console.log(" initialStory?.contentRating", initialStory?.contentFor);
-  const [contentFor, setContentFor] = useState<number>(
-    initialStory?.contentFor ?? 0,
-  );
+  const [contentFor, setContentFor] = useState<number>(() => {
+    const raw =
+      initialStory?.contentFor ?? (initialStory as any)?.contentRating;
+    if (raw !== undefined && raw !== null) {
+      const num = Number(raw);
+      if (!Number.isNaN(num)) return num;
+    }
+    return 0;
+  });
   const [isFeatured, setIsFeatured] = useState<boolean>(
     initialStory?.isFeatured ?? false,
   );
@@ -538,6 +545,44 @@ export function StoryForm({ initialStory }: StoryFormProps) {
 
   const categories = categoriesQuery.data ?? [];
 
+  const categoryItems = useMemo(() => {
+    const map = new Map<string, string>();
+    if (
+      typeof initialStory?.categoryId === "object" &&
+      initialStory?.categoryId
+    ) {
+      const id =
+        (initialStory.categoryId as any)._id ||
+        (initialStory.categoryId as any).id;
+      if (id && initialStory.categoryId.title) {
+        map.set(String(id), initialStory.categoryId.title);
+      }
+    }
+    categories.forEach((cat) => {
+      map.set(String(cat.id), cat.title);
+    });
+    return Array.from(map.entries()).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [categories, initialStory]);
+
+  const selectedCategoryTitle = useMemo(() => {
+    if (!categoryId) return "";
+    const found = categoryItems.find((item) => item.value === categoryId);
+    return found ? String(found.label) : "";
+  }, [categoryId, categoryItems]);
+
+  const selectedRatingLabel = useMemo(() => {
+    const match = CONTENT_RATINGS.find((r) => r.value === Number(contentFor));
+    return match ? match.label : "";
+  }, [contentFor]);
+
+  const selectedLanguageLabel = useMemo(() => {
+    const match = ALL_LANGUAGES.find((l) => l.value === defaultLanguage);
+    return match ? match.label : "";
+  }, [defaultLanguage]);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8 pb-16 max-w-6xl mx-auto">
       {/* Top Header / Actions Bar */}
@@ -633,16 +678,23 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 Category *
               </label>
               <Select
+                items={categoryItems}
                 value={categoryId}
                 onValueChange={(val) => setCategoryId(val || "")}
               >
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select Category" />
+                  <SelectValue placeholder="Select Category">
+                    {selectedCategoryTitle || undefined}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id} className="text-xs">
-                      {cat.title}
+                <SelectContent alignItemWithTrigger={false}>
+                  {categoryItems.map((cat) => (
+                    <SelectItem
+                      key={cat.value}
+                      value={cat.value}
+                      className="text-xs"
+                    >
+                      {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -655,11 +707,14 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 Content Rating *
               </label>
               <Select
+                items={CONTENT_RATINGS}
                 value={contentFor}
-                onValueChange={(val) => setContentFor(val || 0)}
+                onValueChange={(val) => setContentFor(Number(val ?? 0))}
               >
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Rating" />
+                  <SelectValue placeholder="Rating">
+                    {selectedRatingLabel || undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent alignItemWithTrigger={false}>
                   {CONTENT_RATINGS.map((rating) => (
@@ -681,9 +736,10 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 Default Language *
               </label>
               <Select
+                items={ALL_LANGUAGES}
                 value={defaultLanguage}
                 onValueChange={(val) => {
-                  const lang = val as StoryLanguage;
+                  const lang = (val || "en") as StoryLanguage;
                   setDefaultLanguage(lang);
                   if (!languages.includes(lang)) {
                     setLanguages((prev) => [...prev, lang]);
@@ -691,9 +747,11 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 }}
               >
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Language" />
+                  <SelectValue placeholder="Language">
+                    {selectedLanguageLabel || undefined}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent alignItemWithTrigger={false}>
                   {ALL_LANGUAGES.map((l) => (
                     <SelectItem
                       key={l.value}
