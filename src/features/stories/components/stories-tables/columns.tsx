@@ -32,7 +32,7 @@ function getMainCategoryId(
 
 export function StoryBannerPreview({ story }: { story: Story }) {
   const [open, setOpen] = useState(false);
-  const imageUrl = story.bannerImage || story.coverImage;
+  const imageUrl = story.coverImage || story.bannerImage;
 
   if (!imageUrl) {
     return <span className="text-muted-foreground text-xs">No image</span>;
@@ -139,23 +139,23 @@ export function getStoriesColumns(
       },
       enableSorting: false,
     },
-    {
-      id: "mainCategory",
-      header: "Main Category",
-      cell: ({ row }) => {
-        const cat =
-          typeof row.original.categoryId === "object" && row.original.categoryId
-            ? row.original.categoryId
-            : null;
-        const mainCat = cat?.mainCategory;
-        const title =
-          typeof mainCat === "object" && mainCat
-            ? mainCat.title
-            : mainCategoryNames.get(getMainCategoryId(mainCat));
-        return <span className="text-muted-foreground">{title ?? "—"}</span>;
-      },
-      enableSorting: false,
-    },
+    // {
+    //   id: "mainCategory",
+    //   header: "Main Category",
+    //   cell: ({ row }) => {
+    //     const cat =
+    //       typeof row.original.categoryId === "object" && row.original.categoryId
+    //         ? row.original.categoryId
+    //         : null;
+    //     const mainCat = cat?.mainCategory;
+    //     const title =
+    //       typeof mainCat === "object" && mainCat
+    //         ? mainCat.title
+    //         : mainCategoryNames.get(getMainCategoryId(mainCat));
+    //     return <span className="text-muted-foreground">{title ?? "—"}</span>;
+    //   },
+    //   enableSorting: false,
+    // },
     {
       accessorKey: "authorName",
       header: "Author",
