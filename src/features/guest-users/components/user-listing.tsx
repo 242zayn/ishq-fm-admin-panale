@@ -1,5 +1,5 @@
-import { UsersTable } from './users-table';
+import { GuestUsersTable } from "./users-table";
 
-export default function UserListingPage() {
-  return <UsersTable />;
+export default function GuestUserListingPage() {
+  return <GuestUsersTable />;
 }

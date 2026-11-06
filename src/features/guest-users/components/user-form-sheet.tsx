@@ -1,207 +1,183 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { FieldGroup } from '@/components/ui/field';
-import { useAppForm } from '@/lib/form';
-import { LoadingButton } from '@/components/ui/loading-button';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { FieldGroup } from "@/components/ui/field";
+import { useAppForm } from "@/lib/form";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
-  SheetTitle
-} from '@/components/ui/sheet';
-import { Icons } from '@/components/icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createUserMutation, updateUserMutation } from '../api/mutations';
-import { userKeys } from '../api/queries';
-import type { User } from '../api/types';
-import { toast } from 'sonner';
-import { userSchema, type UserFormValues } from '../schemas/user';
-import { ROLE_OPTIONS } from './users-table/options';
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Icons } from "@/components/icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  createGuestUserMutation,
+  updateGuestUserMutation,
+} from "../api/mutations";
+import { guestUserKeys } from "../api/queries";
+import type { GuestUser } from "../api/types";
+import { toast } from "sonner";
+import { guestUserSchema, type GuestUserFormValues } from "../schemas/user";
+import { Switch } from "@/components/ui/switch";
 
-const STATUS_OPTIONS = [
-  { value: 'Active', label: 'Active' },
-  { value: 'Inactive', label: 'Inactive' }
-];
-
-interface UserFormSheetProps {
-  user?: User;
+interface GuestUserFormSheetProps {
+  guestUser?: GuestUser;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function UserFormSheet({ user, open, onOpenChange }: UserFormSheetProps) {
-  const isEdit = !!user;
+export function GuestUserFormSheet({
+  guestUser,
+  open,
+  onOpenChange,
+}: GuestUserFormSheetProps) {
+  const isEdit = Boolean(guestUser);
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    ...createUserMutation,
+    ...createGuestUserMutation,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: userKeys.all });
-      toast.success('User created');
+      await queryClient.invalidateQueries({ queryKey: guestUserKeys.all });
+      toast.success("Guest user created");
       onOpenChange(false);
       form.reset();
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Couldn't create user.")
+      toast.error(
+        error instanceof Error ? error.message : "Couldn't create guest user.",
+      ),
   });
 
   const updateMutation = useMutation({
-    ...updateUserMutation,
+    ...updateGuestUserMutation,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: userKeys.all });
-      toast.success('User updated');
+      await queryClient.invalidateQueries({ queryKey: guestUserKeys.all });
+      toast.success("Guest user updated");
       onOpenChange(false);
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Couldn't update user.")
+      toast.error(
+        error instanceof Error ? error.message : "Couldn't update guest user.",
+      ),
   });
 
   const form = useAppForm({
     defaultValues: {
-      first_name: user?.first_name ?? '',
-      last_name: user?.last_name ?? '',
-      email: user?.email ?? '',
-      password: '',
-      role: user?.role ?? 'user',
-      status: user?.status ?? 'Active'
-    } as UserFormValues,
+      guestId: guestUser?.guestId ?? "",
+      name: guestUser?.name ?? "Guest User",
+      isAdult: guestUser?.isAdult ?? false,
+    } as GuestUserFormValues,
     validators: {
-      onSubmit: userSchema
+      onSubmit: guestUserSchema,
     },
     onSubmit: async ({ value }) => {
-      const name = `${value.first_name} ${value.last_name}`.trim();
-
-      if (isEdit) {
+      if (isEdit && guestUser) {
         await updateMutation.mutateAsync({
-          id: user.id,
+          id: guestUser.id,
           values: {
-            name,
-            email: value.email,
-            role: value.role,
-            isActive: value.status === 'Active',
-            ...(value.password ? { password: value.password } : {})
-          }
+            guestId: value.guestId.trim(),
+            name: value.name.trim(),
+            isAdult: Boolean(value.isAdult),
+          },
         });
       } else {
         await createMutation.mutateAsync({
-          name,
-          email: value.email,
-          password: value.password,
-          role: value.role
+          guestId: value.guestId.trim(),
+          name: value.name.trim(),
+          isAdult: Boolean(value.isAdult),
         });
       }
-    }
+    },
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className='flex flex-col'>
-        <SheetHeader>
-          <SheetTitle>{isEdit ? 'Edit User' : 'New User'}</SheetTitle>
-          <SheetDescription>
-            {isEdit
-              ? 'Update the user details below.'
-              : 'Fill in the details to create a new user.'}
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent className="flex flex-col justify-between sm:max-w-md">
+        <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pt-6">
+          <SheetHeader className="gap-1 text-left">
+            <SheetTitle>
+              {isEdit ? "Edit Guest User" : "Register Guest User"}
+            </SheetTitle>
+            <SheetDescription>
+              {isEdit
+                ? "Update device ID, name, or content maturity preferences."
+                : "Add a new guest user device to the system."}
+            </SheetDescription>
+          </SheetHeader>
 
-        <div className='flex-1 overflow-auto'>
           <form
-            id='user-form-sheet'
-            className='space-y-4 p-4 md:p-4'
+            id="guest-user-form-sheet"
             onSubmit={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               form.handleSubmit();
             }}
           >
-            <FieldGroup>
-              <div className='grid grid-cols-2 gap-4'>
-                <form.AppField
-                  name='first_name'
-                  children={(field) => (
-                    <field.TextField label='First Name' required placeholder='John' />
-                  )}
-                />
-                <form.AppField
-                  name='last_name'
-                  children={(field) => <field.TextField label='Last Name' placeholder='Doe' />}
-                />
-              </div>
-
-              <form.AppField
-                name='email'
-                children={(field) => (
+            <FieldGroup className="gap-4">
+              <form.AppField name="guestId">
+                {(field) => (
                   <field.TextField
-                    label='Email'
+                    label="Guest Device ID"
                     required
-                    type='email'
-                    placeholder='john@example.com'
+                    placeholder="e.g. device_uuid_12345"
+                    description="Unique device identifier generated by mobile/web app."
                   />
                 )}
-              />
+              </form.AppField>
 
-              <form.AppField
-                name='password'
-                validators={{
-                  onSubmit: ({ value }) =>
-                    !value && isEdit
-                      ? undefined
-                      : value.length < 6
-                        ? 'Password must be at least 6 characters'
-                        : undefined
-                }}
-                children={(field) => (
+              <form.AppField name="name">
+                {(field) => (
                   <field.TextField
-                    label={isEdit ? 'New password' : 'Password'}
-                    required={!isEdit}
-                    type='password'
-                    placeholder={
-                      isEdit ? 'Leave blank to keep current password' : 'At least 6 characters'
-                    }
-                    description={isEdit ? 'Leave blank to keep the current password.' : undefined}
-                  />
-                )}
-              />
-
-              <form.AppField
-                name='role'
-                children={(field) => (
-                  <field.SelectField
-                    label='Role'
+                    label="Display Name"
                     required
-                    options={ROLE_OPTIONS}
-                    placeholder='Select role'
+                    placeholder="e.g. Guest User"
                   />
                 )}
-              />
+              </form.AppField>
 
-              <form.AppField
-                name='status'
-                children={(field) => (
-                  <field.SelectField
-                    label='Status'
-                    required
-                    options={STATUS_OPTIONS}
-                    placeholder='Select status'
-                  />
+              <form.AppField name="isAdult">
+                {(field) => (
+                  <div className="flex items-center justify-between rounded-lg border p-3.5">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">
+                        18+ Adult Content Preference
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Enable if the guest user allows mature (18+) content.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => field.handleChange(checked)}
+                    />
+                  </div>
                 )}
-              />
+              </form.AppField>
             </FieldGroup>
           </form>
         </div>
 
-        <SheetFooter>
-          <Button type='button' variant='outline' onClick={() => onOpenChange(false)}>
+        <SheetFooter className="gap-2 sm:gap-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <LoadingButton loading={isPending} type='submit' form='user-form-sheet'>
-            {isEdit ? 'Update User' : 'Create User'}
+          <LoadingButton
+            loading={isPending}
+            type="submit"
+            form="guest-user-form-sheet"
+          >
+            {isEdit ? "Update Guest" : "Create Guest"}
           </LoadingButton>
         </SheetFooter>
       </SheetContent>
@@ -209,15 +185,15 @@ export function UserFormSheet({ user, open, onOpenChange }: UserFormSheetProps) 
   );
 }
 
-export function UserFormSheetTrigger() {
+export function GuestUserFormSheetTrigger() {
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <Button onClick={() => setOpen(true)}>
-        <Icons.add className='mr-2 h-4 w-4' /> Add User
+        <Icons.add className="mr-2 h-4 w-4" /> Add Guest User
       </Button>
-      <UserFormSheet open={open} onOpenChange={setOpen} />
+      <GuestUserFormSheet open={open} onOpenChange={setOpen} />
     </>
   );
 }

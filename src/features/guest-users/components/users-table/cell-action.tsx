@@ -1,25 +1,26 @@
-'use client';
-import { AlertModal } from '@/components/modal/alert-modal';
-import { Button } from '@/components/ui/button';
+"use client";
+
+import { AlertModal } from "@/components/modal/alert-modal";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuGroup,
   DropdownMenuLabel,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { deleteUserMutation } from '../../api/mutations';
-import type { User } from '../../api/types';
-import { Icons } from '@/components/icons';
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { UserFormSheet } from '../user-form-sheet';
-import { userKeys } from '../../api/queries';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { deleteGuestUserMutation } from "../../api/mutations";
+import type { GuestUser } from "../../api/types";
+import { Icons } from "@/components/icons";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { GuestUserFormSheet } from "../user-form-sheet";
+import { guestUserKeys } from "../../api/queries";
 
 interface CellActionProps {
-  data: User;
+  data: GuestUser;
 }
 
 export function CellAction({ data }: CellActionProps) {
@@ -28,15 +29,15 @@ export function CellAction({ data }: CellActionProps) {
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    ...deleteUserMutation,
+    ...deleteGuestUserMutation,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: userKeys.all });
-      toast.success('User deleted successfully');
+      await queryClient.invalidateQueries({ queryKey: guestUserKeys.all });
+      toast.success("Guest user deleted successfully");
       setDeleteOpen(false);
     },
     onError: () => {
-      toast.error('Failed to delete user');
-    }
+      toast.error("Failed to delete guest user");
+    },
   });
 
   return (
@@ -47,22 +48,28 @@ export function CellAction({ data }: CellActionProps) {
         onConfirm={() => deleteMutation.mutate(data.id)}
         loading={deleteMutation.isPending}
       />
-      <UserFormSheet user={data} open={editOpen} onOpenChange={setEditOpen} />
+      <GuestUserFormSheet
+        guestUser={data}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger render={<Button variant='ghost' className='h-8 w-8 p-0' />}>
-          <span className='sr-only'>Open menu</span>
-          <Icons.ellipsis className='h-4 w-4' />
+        <DropdownMenuTrigger
+          render={<Button variant="ghost" className="h-8 w-8 p-0" />}
+        >
+          <span className="sr-only">Open menu</span>
+          <Icons.ellipsis className="h-4 w-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end'>
+        <DropdownMenuContent align="end">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => setEditOpen(true)}>
-              <Icons.edit className='mr-2 h-4 w-4' /> Update
+              <Icons.edit className="mr-2 h-4 w-4" /> Update
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
-              <Icons.trash className='mr-2 h-4 w-4' /> Delete
+              <Icons.trash className="mr-2 h-4 w-4" /> Delete
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

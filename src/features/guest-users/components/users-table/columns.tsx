@@ -1,87 +1,95 @@
-'use client';
-import { Icons } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
-import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import { Column, ColumnDef } from '@tanstack/react-table';
-import type { User } from '../../api/types';
-import { CellAction } from './cell-action';
-import { ROLE_OPTIONS } from './options';
+"use client";
 
-export const columns: ColumnDef<User>[] = [
+import { Icons } from "@/components/icons";
+import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
+import { Column, ColumnDef } from "@tanstack/react-table";
+import type { GuestUser } from "../../api/types";
+import { CellAction } from "./cell-action";
+import { IS_ADULT_OPTIONS } from "./options";
+
+export const columns: ColumnDef<GuestUser>[] = [
   {
-    id: 'name',
-    accessorFn: (row) => `${row.first_name} ${row.last_name}`,
-    header: ({ column }: { column: Column<User, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Name' />
+    id: "name",
+    accessorKey: "name",
+    header: ({ column }: { column: Column<GuestUser, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
-      <div className='flex flex-col'>
-        <span className='font-medium'>
-          {row.original.first_name} {row.original.last_name}
+      <div className="flex flex-col">
+        <span className="font-medium">{row.original.name || "Guest User"}</span>
+        <span className="font-mono text-muted-foreground text-xs">
+          {row.original.guestId}
         </span>
-        <span className='text-muted-foreground text-xs'>{row.original.email}</span>
       </div>
     ),
     meta: {
-      label: 'Name',
-      placeholder: 'Search users...',
-      variant: 'text' as const,
-      icon: Icons.text
+      label: "Name or Guest ID",
+      placeholder: "Search guest users...",
+      variant: "text" as const,
+      icon: Icons.text,
     },
-    enableColumnFilter: true
+    enableColumnFilter: true,
   },
   {
-    accessorKey: 'created_at',
-    header: 'JOINED',
-    cell: ({ cell }) => {
-      const createdAt = new Date(cell.getValue<string>());
-      return Number.isNaN(createdAt.getTime())
-        ? '—'
-        : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(createdAt);
-    }
-  },
-  {
-    id: 'role',
-    accessorKey: 'role',
-    enableSorting: false,
-    header: ({ column }: { column: Column<User, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Role' />
+    accessorKey: "isAdult",
+    id: "isAdult",
+    enableSorting: true,
+    header: ({ column }: { column: Column<GuestUser, unknown> }) => (
+      <DataTableColumnHeader column={column} title="18+ / Preference" />
     ),
     cell: ({ cell }) => {
-      return (
-        <Badge variant='outline' className='capitalize'>
-          {cell.getValue<User['role']>()}
+      const isAdult = Boolean(cell.getValue<boolean>());
+      return isAdult ? (
+        <Badge variant="destructive" className="text-xs">
+          18+ Adult
+        </Badge>
+      ) : (
+        <Badge variant="secondary" className="text-xs">
+          All Ages
         </Badge>
       );
     },
     enableColumnFilter: true,
     meta: {
-      label: 'Role',
-      variant: 'multiSelect' as const,
-      options: ROLE_OPTIONS
-    }
+      label: "Content Preference",
+      variant: "multiSelect" as const,
+      options: IS_ADULT_OPTIONS,
+    },
   },
   {
-    accessorKey: 'status',
-    header: 'STATUS',
+    accessorKey: "lastActiveAt",
+    header: "LAST ACTIVE",
     cell: ({ cell }) => {
-      const status = cell.getValue<User['status']>();
-      const variant =
-        status === 'Active' ? 'default' : status === 'Inactive' ? 'secondary' : 'outline';
-      return <Badge variant={variant}>{status}</Badge>;
-    }
+      const val = cell.getValue<string | undefined>();
+      if (!val) return "—";
+      const date = new Date(val);
+      return Number.isNaN(date.getTime())
+        ? "—"
+        : new Intl.DateTimeFormat(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(date);
+    },
   },
   {
-     accessorKey: 'action',
-    header: 'Action',
-    cell: ({ row }) => {
-      const isAdmin = row.original.role == "admin";
-      if (isAdmin) {
-        return null
-      }
-      return(
-        <CellAction data={row.original} />
-      )
-    }
-  }
+    accessorKey: "createdAt",
+    header: "REGISTERED",
+    cell: ({ cell }) => {
+      const val = cell.getValue<string>();
+      if (!val) return "—";
+      const createdAt = new Date(val);
+      return Number.isNaN(createdAt.getTime())
+        ? "—"
+        : new Intl.DateTimeFormat(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(createdAt);
+    },
+  },
+  {
+    id: "actions",
+    header: "Action",
+    cell: ({ row }) => <CellAction data={row.original} />,
+  },
 ];

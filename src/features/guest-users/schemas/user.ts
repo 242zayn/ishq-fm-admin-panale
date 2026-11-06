@@ -1,16 +1,17 @@
-import * as z from 'zod';
+import * as z from "zod";
 
-const userFormFields = {
-  first_name: z.string().trim().min(1, 'First name is required'),
-  last_name: z.string().trim(),
-  email: z.string().trim().email('Please enter a valid email'),
-  role: z.enum(['user', 'admin', 'guest']),
-  status: z.enum(['Active', 'Inactive'])
-};
-
-export const userSchema = z.object({
-  ...userFormFields,
-  password: z.union([z.literal(''), z.string().min(6, 'Password must be at least 6 characters')])
+export const guestUserSchema = z.object({
+  guestId: z
+    .string()
+    .trim()
+    .min(1, "Device/Guest ID is required")
+    .max(100, "Guest ID must be less than 100 characters"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(80, "Name must be less than 80 characters"),
+  isAdult: z.boolean(),
 });
 
-export type UserFormValues = z.infer<typeof userSchema>;
+export type GuestUserFormValues = z.infer<typeof guestUserSchema>;

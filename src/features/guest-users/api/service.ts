@@ -1,54 +1,75 @@
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 import type {
-  BackendUser,
-  CreateUserPayload,
-  UpdateUserPayload,
-  User,
-  UsersResponse
-} from './types';
+  BackendGuestUser,
+  CreateGuestUserPayload,
+  GuestUser,
+  GuestUsersResponse,
+  SingleGuestUserResponse,
+  UpdateGuestUserPayload,
+} from "./types";
 
-function toDashboardUser(user: BackendUser): User {
-  const [firstName = '', ...lastName] = user.name.trim().split(/\s+/);
-
+function toGuestUser(raw: BackendGuestUser): GuestUser {
   return {
-    id: user['_id'],
-    first_name: firstName,
-    last_name: lastName.join(' '),
-    email: user.email,
-    role: user.role,
-    status: user.isActive ? 'Active' : 'Inactive',
-    avatar: user.avatar ?? null,
-    created_at: user.createdAt,
-    updated_at: user.updatedAt
+    id: raw._id,
+    guestId: raw.guestId,
+    name: raw.name,
+    isAdult: Boolean(raw.isAdult),
+    lastActiveAt: raw.lastActiveAt,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
   };
 }
 
-export async function getUsers(): Promise<UsersResponse> {
-  const users = await apiClient<BackendUser[]>('/backend/user');
-  const mappedUsers = users.map(toDashboardUser);
-
-  return {
-    users: mappedUsers,
-    total_users: mappedUsers.length
-  };
+export async function getGuestUsers(): Promise<GuestUser[]> {
+  const response = await apiClient<GuestUsersResponse>("/backend/guest-user");
+  const items = Array.isArray(response) ? response : (response?.data ?? []);
+  return items.map(toGuestUser);
 }
 
-export async function createUser(data: CreateUserPayload): Promise<BackendUser> {
-  return apiClient<BackendUser>('/backend/user', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
+export async function getGuestUserById(id: string): Promise<GuestUser> {
+  const response = await apiClient<SingleGuestUserResponse>(
+    `/backend/guest-user/${encodeURIComponent(id)}`,
+  );
+  const data = response?.data ?? (response as unknown as BackendGuestUser);
+  return toGuestUser(data);
 }
 
-export async function updateUser(id: string, data: UpdateUserPayload): Promise<BackendUser> {
-  return apiClient<BackendUser>(`/backend/user/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data)
-  });
+export async function createGuestUser(
+  data: CreateGuestUserPayload,
+): Promise<GuestUser> {
+  const response = await apiClient<SingleGuestUserResponse>(
+    "/backend/guest-user",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+  const result = response?.data ?? (response as unknown as BackendGuestUser);
+  return toGuestUser(result);
 }
 
-export async function deleteUser(id: string): Promise<{ message: string }> {
-  return apiClient<{ message: string }>(`/backend/user/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
+export async function updateGuestUser(
+  id: string,
+  data: UpdateGuestUserPayload,
+): Promise<GuestUser> {
+  const response = await apiClient<SingleGuestUserResponse>(
+    `/backend/guest-user/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    },
+  );
+  const result = response?.data ?? (response as unknown as BackendGuestUser);
+  return toGuestUser(result);
+}
+
+export async function deleteGuestUser(
+  id: string,
+): Promise<{ message: string }> {
+  return apiClient<{ message: string }>(
+    `/backend/guest-user/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+    },
+  );
 }

@@ -1,27 +1,32 @@
 import { mutationOptions } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
-import { createUser, deleteUser, updateUser } from "./service";
-import { userKeys } from "./queries";
-import type { CreateUserPayload, UpdateUserPayload } from "./types";
+import { createGuestUser, deleteGuestUser, updateGuestUser } from "./service";
+import { guestUserKeys } from "./queries";
+import type { CreateGuestUserPayload, UpdateGuestUserPayload } from "./types";
 
-export const createUserMutation = mutationOptions({
-  mutationFn: (data: CreateUserPayload) => createUser(data),
+export const createGuestUserMutation = mutationOptions({
+  mutationFn: (data: CreateGuestUserPayload) => createGuestUser(data),
   onSuccess: () => {
-    getQueryClient().invalidateQueries({ queryKey: userKeys.all });
+    getQueryClient().invalidateQueries({ queryKey: guestUserKeys.all });
   },
 });
 
-export const updateUserMutation = mutationOptions({
-  mutationFn: ({ id, values }: { id: string; values: UpdateUserPayload }) =>
-    updateUser(id, values),
+export const updateGuestUserMutation = mutationOptions({
+  mutationFn: ({
+    id,
+    values,
+  }: {
+    id: string;
+    values: UpdateGuestUserPayload;
+  }) => updateGuestUser(id, values),
   onSuccess: () => {
-    getQueryClient().invalidateQueries({ queryKey: userKeys.all });
+    getQueryClient().invalidateQueries({ queryKey: guestUserKeys.all });
   },
 });
 
-export const deleteUserMutation = mutationOptions({
-  mutationFn: (id: string) => deleteUser(id),
+export const deleteGuestUserMutation = mutationOptions({
+  mutationFn: (id: string) => deleteGuestUser(id),
   onSuccess: () => {
-    getQueryClient().invalidateQueries({ queryKey: userKeys.all });
+    getQueryClient().invalidateQueries({ queryKey: guestUserKeys.all });
   },
 });

@@ -8,22 +8,22 @@ import { useDataTable } from "@/hooks/use-data-table";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { getSortingStateParser } from "@/lib/parsers";
-import { usersQueryOptions } from "../../api/queries";
-import type { User } from "../../api/types";
+import { guestUsersQueryOptions } from "../../api/queries";
+import type { GuestUser } from "../../api/types";
 import { columns } from "./columns";
 
 const columnIds = columns.map((c) => c.id).filter(Boolean) as string[];
 
-function getSortValue(user: User, columnId: string): string {
+function getSortValue(guest: GuestUser, columnId: string): string {
   switch (columnId) {
     case "name":
-      return `${user.first_name} ${user.last_name}`;
-    case "role":
-      return user.role;
-    case "status":
-      return user.status;
-    case "created_at":
-      return user.created_at;
+      return `${guest.name} ${guest.guestId}`;
+    case "isAdult":
+      return guest.isAdult ? "true" : "false";
+    case "lastActiveAt":
+      return guest.lastActiveAt ?? "";
+    case "createdAt":
+      return guest.createdAt;
     default:
       return "";
   }
@@ -34,31 +34,36 @@ export function GuestUsersTable() {
     page: parseAsInteger.withDefault(1),
     perPage: parseAsInteger.withDefault(10),
     name: parseAsString,
-    role: parseAsString,
+    isAdult: parseAsString,
     sort: getSortingStateParser(columnIds).withDefault([]),
   });
 
-  const { data, error, isPending, refetch } = useQuery(usersQueryOptions());
-  const userRecords = data?.users;
-  const filteredUsers = useMemo(() => {
+  const { data, error, isPending, refetch } = useQuery(
+    guestUsersQueryOptions(),
+  );
+  const guestRecords = data ?? [];
+
+  const filteredGuests = useMemo(() => {
     const search = params.name?.trim().toLocaleLowerCase();
-    const selectedRoles = new Set(
-      params.role?.split(/[,.]/).filter(Boolean) ?? [],
+    const selectedAdultFilters = new Set(
+      params.isAdult?.split(/[,.]/).filter(Boolean) ?? [],
     );
-    const users = (userRecords ?? []).filter((user) => {
+
+    const guests = [...guestRecords].filter((guest) => {
       const matchesSearch =
         !search ||
-        `${user.first_name} ${user.last_name} ${user.email}`
-          .toLocaleLowerCase()
-          .includes(search);
-      return (
-        matchesSearch && (!selectedRoles.size || selectedRoles.has(user.role))
-      );
+        `${guest.name} ${guest.guestId}`.toLocaleLowerCase().includes(search);
+
+      const adultStr = guest.isAdult ? "true" : "false";
+      const matchesAdult =
+        !selectedAdultFilters.size || selectedAdultFilters.has(adultStr);
+
+      return matchesSearch && matchesAdult;
     });
 
     const [sort] = params.sort;
     if (sort) {
-      users.sort((left, right) => {
+      guests.sort((left, right) => {
         const comparison = getSortValue(left, sort.id).localeCompare(
           getSortValue(right, sort.id),
           undefined,
@@ -70,15 +75,22 @@ export function GuestUsersTable() {
         return sort.desc ? -comparison : comparison;
       });
     }
-    return users;
-  }, [userRecords, params.name, params.role, params.sort]);
 
-  const pageCount = Math.ceil(filteredUsers.length / params.perPage);
+    return guests;
+  }, [guestRecords, params.name, params.isAdult, params.sort]);
+
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filteredGuests.length / params.perPage),
+  );
   const pageStart = (params.page - 1) * params.perPage;
-  const pageUsers = filteredUsers.slice(pageStart, pageStart + params.perPage);
+  const pageGuests = filteredGuests.slice(
+    pageStart,
+    pageStart + params.perPage,
+  );
 
   const { table } = useDataTable({
-    data: pageUsers,
+    data: pageGuests,
     columns,
     pageCount,
     shallow: true,
@@ -88,15 +100,17 @@ export function GuestUsersTable() {
     },
   });
 
-  if (isPending) return <UsersTableSkeleton />;
+  if (isPending) return <GuestUsersTableSkeleton />;
   if (error) {
     return (
       <div
         role="alert"
-        className="text-destructive flex flex-col items-start gap-3"
+        className="text-destructive flex flex-col items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4"
       >
-        <p>Could not load users: {error.message}</p>
-        <Button variant="outline" onClick={() => void refetch()}>
+        <p className="text-sm font-medium">
+          Could not load guest users: {error.message}
+        </p>
+        <Button variant="outline" size="sm" onClick={() => void refetch()}>
           Retry
         </Button>
       </div>
@@ -110,7 +124,7 @@ export function GuestUsersTable() {
   );
 }
 
-export function UsersTableSkeleton() {
+export function GuestUsersTableSkeleton() {
   return (
     <div className="flex flex-1 animate-pulse flex-col gap-4">
       <div className="bg-muted h-10 w-full rounded" />
