@@ -2,6 +2,7 @@
 
 import { Icons } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
+import { CopyToClipboard } from "@/components/ui/copy-to-clipboard";
 import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import type { GuestUser } from "../../api/types";
@@ -16,11 +17,18 @@ export const columns: ColumnDef<GuestUser>[] = [
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.original.name || "Guest User"}</span>
-        <span className="font-mono text-muted-foreground text-xs">
-          {row.original.guestId}
+      <div className="flex flex-col gap-0.5">
+        <span className="font-medium text-foreground">
+          {row.original.name || "Guest User"}
         </span>
+        <div className="flex items-center gap-1.5">
+          <CopyToClipboard
+            variant="inline"
+            text={row.original.guestId}
+            successMessage="Guest ID copied to clipboard"
+            className="text-muted-foreground hover:text-foreground cursor-pointer "
+          />
+        </div>
       </div>
     ),
     meta: {

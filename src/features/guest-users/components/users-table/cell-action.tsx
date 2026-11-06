@@ -53,27 +53,28 @@ export function CellAction({ data }: CellActionProps) {
         open={editOpen}
         onOpenChange={setEditOpen}
       />
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger
-          render={<Button variant="ghost" className="h-8 w-8 p-0" />}
+      <div className="flex items-center gap-1.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-lg cursor-pointer border border-border/40 text-muted-foreground hover:bg-accent hover:text-foreground"
+          onClick={() => setEditOpen(true)}
+          title="Edit Category"
         >
-          <span className="sr-only">Open menu</span>
-          <Icons.ellipsis className="h-4 w-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          </DropdownMenuGroup>
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => setEditOpen(true)}>
-              <Icons.edit className="mr-2 h-4 w-4" /> Update
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
-              <Icons.trash className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <Icons.edit className="h-4 w-4" />
+          <span className="sr-only">Edit</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-lg cursor-pointer border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          onClick={() => setDeleteOpen(true)}
+          title="Delete Category"
+        >
+          <Icons.trash className="h-4 w-4" />
+          <span className="sr-only">Delete</span>
+        </Button>
+      </div>
     </>
   );
 }
