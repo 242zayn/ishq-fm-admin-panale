@@ -1,54 +1,77 @@
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 import type {
+  ApiResponse,
   BackendUser,
   CreateUserPayload,
   UpdateUserPayload,
   User,
-  UsersResponse
-} from './types';
+  UsersResponse,
+} from "./types";
 
 function toDashboardUser(user: BackendUser): User {
-  const [firstName = '', ...lastName] = user.name.trim().split(/\s+/);
-
   return {
-    id: user['_id'],
-    first_name: firstName,
-    last_name: lastName.join(' '),
-    email: user.email,
-    role: user.role,
-    status: user.isActive ? 'Active' : 'Inactive',
+    id: user._id,
+    name: user.name || "",
+    email: user.email || "",
+    role: user.role || "user",
+    profileBanner: user.profileBanner ?? "",
+    referralCode: user.referralCode ?? "",
+    status: user.isActive ? "Active" : "Inactive",
     avatar: user.avatar ?? null,
     created_at: user.createdAt,
-    updated_at: user.updatedAt
+    updated_at: user.updatedAt,
   };
 }
 
 export async function getUsers(): Promise<UsersResponse> {
-  const users = await apiClient<BackendUser[]>('/backend/user');
-  const mappedUsers = users.map(toDashboardUser);
+  const response = await apiClient<ApiResponse<BackendUser[]> | BackendUser[]>(
+    "/backend/user",
+  );
+  const backendUsers = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : [];
+  const mappedUsers = backendUsers.map(toDashboardUser);
+
+  const total =
+    (!Array.isArray(response)
+      ? (response?.meta?.pagination?.total ?? response?.paginationData?.total)
+      : undefined) ?? mappedUsers.length;
 
   return {
     users: mappedUsers,
-    total_users: mappedUsers.length
+    total_users: total,
+    pagination: !Array.isArray(response)
+      ? (response?.meta?.pagination ?? response?.paginationData)
+      : undefined,
   };
 }
 
-export async function createUser(data: CreateUserPayload): Promise<BackendUser> {
-  return apiClient<BackendUser>('/backend/user', {
-    method: 'POST',
-    body: JSON.stringify(data)
+export async function createUser(
+  data: CreateUserPayload,
+): Promise<BackendUser> {
+  return apiClient<BackendUser>("/backend/user", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }
 
-export async function updateUser(id: string, data: UpdateUserPayload): Promise<BackendUser> {
+export async function updateUser(
+  id: string,
+  data: UpdateUserPayload,
+): Promise<BackendUser> {
   return apiClient<BackendUser>(`/backend/user/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data)
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
 
 export async function deleteUser(id: string): Promise<{ message: string }> {
-  return apiClient<{ message: string }>(`/backend/user/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
+  return apiClient<{ message: string }>(
+    `/backend/user/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+    },
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -51,9 +51,9 @@ const ALL_LANGUAGES: { value: StoryLanguage; label: string }[] = [
 ];
 
 const CONTENT_RATINGS = [
-  { value: "ALL", label: "General (All Ages)" },
-  { value: "TEEN", label: "Teen (13+)" },
-  { value: "MATURE", label: "Mature (18+)" },
+  { value: 0, label: "General (All Ages)" },
+  { value: 13, label: "Teen (13+)" },
+  { value: 18, label: "Mature (18+)" },
 ];
 
 interface StoryTranslationState {
@@ -89,7 +89,9 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   const [categoryId, setCategoryId] = useState<string>(() => {
     const raw = initialStory?.categoryId;
     if (typeof raw === "string") return raw;
-    if (typeof raw === "object" && raw?._id) return raw._id;
+    if (typeof raw === "object" && raw) {
+      return (raw as any)._id || (raw as any).id || "";
+    }
     return "";
   });
   const [coverImage, setCoverImage] = useState<string>(
@@ -101,16 +103,21 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   const [tags, setTags] = useState<string>(
     initialStory?.tags?.join(", ") ?? "",
   );
-  const [contentRating, setContentRating] = useState<string>(
-    initialStory?.contentRating ?? "ALL",
-  );
+  const [contentFor, setContentFor] = useState<number>(() => {
+    const raw =
+      initialStory?.contentFor ?? (initialStory as any)?.contentRating;
+    if (raw !== undefined && raw !== null) {
+      const num = Number(raw);
+      if (!Number.isNaN(num)) return num;
+    }
+    return 0;
+  });
   const [isFeatured, setIsFeatured] = useState<boolean>(
     initialStory?.isFeatured ?? false,
   );
   const [isTrending, setIsTrending] = useState<boolean>(
     initialStory?.isTrending ?? false,
   );
-
   // Audio settings
   const [hasAudio, setHasAudio] = useState<boolean>(
     initialStory?.hasAudio ?? false,
@@ -494,7 +501,8 @@ export function StoryForm({ initialStory }: StoryFormProps) {
       categoryId,
       coverImage: coverImage.trim(),
       bannerImage: bannerImage.trim(),
-      contentRating,
+      // contentRating,
+      contentFor,
       tags: tagArray,
       isFeatured,
       isTrending,
@@ -536,6 +544,44 @@ export function StoryForm({ initialStory }: StoryFormProps) {
   };
 
   const categories = categoriesQuery.data ?? [];
+
+  const categoryItems = useMemo(() => {
+    const map = new Map<string, string>();
+    if (
+      typeof initialStory?.categoryId === "object" &&
+      initialStory?.categoryId
+    ) {
+      const id =
+        (initialStory.categoryId as any)._id ||
+        (initialStory.categoryId as any).id;
+      if (id && initialStory.categoryId.title) {
+        map.set(String(id), initialStory.categoryId.title);
+      }
+    }
+    categories.forEach((cat) => {
+      map.set(String(cat.id), cat.title);
+    });
+    return Array.from(map.entries()).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [categories, initialStory]);
+
+  const selectedCategoryTitle = useMemo(() => {
+    if (!categoryId) return "";
+    const found = categoryItems.find((item) => item.value === categoryId);
+    return found ? String(found.label) : "";
+  }, [categoryId, categoryItems]);
+
+  const selectedRatingLabel = useMemo(() => {
+    const match = CONTENT_RATINGS.find((r) => r.value === Number(contentFor));
+    return match ? match.label : "";
+  }, [contentFor]);
+
+  const selectedLanguageLabel = useMemo(() => {
+    const match = ALL_LANGUAGES.find((l) => l.value === defaultLanguage);
+    return match ? match.label : "";
+  }, [defaultLanguage]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 pb-16 max-w-6xl mx-auto">
@@ -604,16 +650,7 @@ export function StoryForm({ initialStory }: StoryFormProps) {
         <CardContent className="space-y-6 pt-6">
           {/* Images Row */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7">
-              <StoryImageUpload
-                label="Banner Image"
-                aspect="banner"
-                value={bannerImage}
-                onChange={setBannerImage}
-                disabled={isPending}
-              />
-            </div>
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-3">
               <StoryImageUpload
                 label="Cover Image"
                 aspect="cover"
@@ -622,102 +659,126 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 disabled={isPending}
               />
             </div>
+            <div className="lg:col-span-9">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Category *
+                  </label>
+                  <Select
+                    items={categoryItems}
+                    value={categoryId}
+                    onValueChange={(val) => setCategoryId(val || "")}
+                  >
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue placeholder="Select Category">
+                        {selectedCategoryTitle || undefined}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent alignItemWithTrigger={false}>
+                      {categoryItems.map((cat) => (
+                        <SelectItem
+                          key={cat.value}
+                          value={cat.value}
+                          className="text-xs"
+                        >
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Content Rating */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Content Rating *
+                  </label>
+                  <Select
+                    items={CONTENT_RATINGS}
+                    value={contentFor}
+                    onValueChange={(val) => setContentFor(Number(val ?? 0))}
+                  >
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue placeholder="Rating">
+                        {selectedRatingLabel || undefined}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent alignItemWithTrigger={false}>
+                      {CONTENT_RATINGS.map((rating) => (
+                        <SelectItem
+                          key={rating.value}
+                          value={rating.value}
+                          className="text-xs"
+                        >
+                          {rating.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Default Primary Language */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Default Language *
+                  </label>
+                  <Select
+                    items={ALL_LANGUAGES}
+                    value={defaultLanguage}
+                    onValueChange={(val) => {
+                      const lang = (val || "en") as StoryLanguage;
+                      setDefaultLanguage(lang);
+                      if (!languages.includes(lang)) {
+                        setLanguages((prev) => [...prev, lang]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue placeholder="Language">
+                        {selectedLanguageLabel || undefined}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent alignItemWithTrigger={false}>
+                      {ALL_LANGUAGES.map((l) => (
+                        <SelectItem
+                          key={l.value}
+                          value={l.value}
+                          className="text-xs"
+                        >
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Tags Input */}
+                <div className="space-y-1.5 lg:col-span-12 ">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Tags (comma separated)
+                  </label>
+                  <Input
+                    placeholder="romance, drama, thriller"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+            {/*<StoryImageUpload
+                label="Banner Image"
+                aspect="banner"
+                value={bannerImage}
+                onChange={setBannerImage}
+                disabled={isPending}
+              />*/}
           </div>
 
           {/* Category, Rating, Tags, Default Language */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Category Select */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Category *
-              </label>
-              <Select
-                value={categoryId}
-                onValueChange={(val) => setCategoryId(val || "")}
-              >
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id} className="text-xs">
-                      {cat.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Content Rating */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Content Rating *
-              </label>
-              <Select
-                value={contentRating}
-                onValueChange={(val) => setContentRating(val || "ALL")}
-              >
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Rating" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTENT_RATINGS.map((rating) => (
-                    <SelectItem
-                      key={rating.value}
-                      value={rating.value}
-                      className="text-xs"
-                    >
-                      {rating.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Default Primary Language */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Default Language *
-              </label>
-              <Select
-                value={defaultLanguage}
-                onValueChange={(val) => {
-                  const lang = val as StoryLanguage;
-                  setDefaultLanguage(lang);
-                  if (!languages.includes(lang)) {
-                    setLanguages((prev) => [...prev, lang]);
-                  }
-                }}
-              >
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALL_LANGUAGES.map((l) => (
-                    <SelectItem
-                      key={l.value}
-                      value={l.value}
-                      className="text-xs"
-                    >
-                      {l.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Tags Input */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Tags (comma separated)
-              </label>
-              <Input
-                placeholder="romance, drama, thriller"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
           </div>
 
           {/* Visibility Flags (Featured, Trending) */}

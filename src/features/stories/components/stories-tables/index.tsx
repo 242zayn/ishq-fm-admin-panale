@@ -122,9 +122,15 @@ export function StoriesTable() {
       <DataTable table={table}>
         <DataTableToolbar table={table}>
           {/* Language selector in Toolbar */}
-          <Select value={params.lang} onValueChange={handleLanguageChange}>
+          <Select
+            items={LANGUAGES}
+            value={params.lang}
+            onValueChange={handleLanguageChange}
+          >
             <SelectTrigger className="h-8 w-32 rounded-lg border-border/50 text-xs font-medium">
-              <SelectValue placeholder="Language" />
+              <SelectValue placeholder="Language">
+                {LANGUAGES.find((l) => l.value === params.lang)?.label || undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent alignItemWithTrigger={false}>
               {LANGUAGES.map((language) => (

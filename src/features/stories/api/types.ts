@@ -1,4 +1,4 @@
-export type StoryLanguage = 'en' | 'hi' | 'bn' | 'hinglish';
+export type StoryLanguage = "en" | "hi" | "bn" | "hinglish";
 
 export type StoryCategory = {
   _id: string;
@@ -63,7 +63,8 @@ export type Story = {
   bannerImage?: string;
   categoryId?: StoryCategory | string | null;
   tags: string[];
-  contentRating: string;
+  contentFor: number;
+  // contentRating: string;
   hasAudio: boolean;
   audioTrack?: StoryAudioTrack | null;
   isFeatured: boolean;
@@ -113,12 +114,13 @@ export type StoryPayload = {
   bannerImage?: string;
   categoryId?: string | null;
   tags: string[];
-  contentRating?: string;
+  contentRating?: number;
   hasAudio?: boolean;
   audioTrack?: StoryAudioTrack;
   isFeatured?: boolean;
   isTrending?: boolean;
   chapters?: StoryChapterPayload[];
+  contentFor: number;
 };
 
 export type StoryMutationResponse = {

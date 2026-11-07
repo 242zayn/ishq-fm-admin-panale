@@ -52,7 +52,7 @@ export function CellAction({ data }: CellActionProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-lg border border-border/40 text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="h-8 w-8 cursor-pointer rounded-lg border border-border/40 text-muted-foreground hover:bg-accent hover:text-foreground"
           onClick={() => router.push(`/dashboard/category/${data.id}`)}
           title="Edit Category"
         >
@@ -62,7 +62,7 @@ export function CellAction({ data }: CellActionProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          className="h-8 w-8 cursor-pointer rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
           onClick={() => setOpen(true)}
           title="Delete Category"
         >
