@@ -1,13 +1,30 @@
-export type UserRole = 'user' | 'admin' | 'guest';
+export type UserRole = "user" | "admin" | "guest";
+
+// export type ApiResponce
+
+export interface ApiResponse<T> {
+  message?: string;
+  data: T;
+  paginationData?: PaginationData;
+}
+export interface PaginationData {
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
+}
 
 export type User = {
   id: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
+  profileBanner: string;
   role: UserRole;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   avatar: string | null;
+  referralCode: string;
   created_at: string;
   updated_at: string;
 };
@@ -35,7 +52,9 @@ export type CreateUserPayload = {
   role: UserRole;
 };
 
-export type UpdateUserPayload = Partial<Omit<CreateUserPayload, 'password'>> & {
+export type UpdateUserPayload = Partial<Omit<CreateUserPayload, "password">> & {
   password?: string;
   isActive?: boolean;
 };
+
+export type UserApiRes = ApiResponse<User>;

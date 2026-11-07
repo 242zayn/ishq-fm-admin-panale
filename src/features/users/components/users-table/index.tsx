@@ -17,7 +17,7 @@ const columnIds = columns.map((c) => c.id).filter(Boolean) as string[];
 function getSortValue(user: User, columnId: string): string {
   switch (columnId) {
     case "name":
-      return `${user.first_name} ${user.last_name}`;
+      return `${user.name}`;
     case "role":
       return user.role;
     case "status":
@@ -40,6 +40,8 @@ export function UsersTable() {
 
   const { data, error, isPending, refetch } = useQuery(usersQueryOptions());
   const userRecords = data?.users;
+  console.log("data is that", data?.users);
+  console.log("data  user is that", data);
   const filteredUsers = useMemo(() => {
     const search = params.name?.trim().toLocaleLowerCase();
     const selectedRoles = new Set(
@@ -48,9 +50,7 @@ export function UsersTable() {
     const users = (userRecords ?? []).filter((user) => {
       const matchesSearch =
         !search ||
-        `${user.first_name} ${user.last_name} ${user.email}`
-          .toLocaleLowerCase()
-          .includes(search);
+        `${user.name} ${user.email}`.toLocaleLowerCase().includes(search);
       return (
         matchesSearch && (!selectedRoles.size || selectedRoles.has(user.role))
       );
