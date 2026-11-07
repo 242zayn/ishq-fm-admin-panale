@@ -1,12 +1,5 @@
 export type UserRole = "user" | "admin" | "guest";
 
-// export type ApiResponce
-
-export interface ApiResponse<T> {
-  message?: string;
-  data: T;
-  paginationData?: PaginationData;
-}
 export interface PaginationData {
   total?: number;
   page?: number;
@@ -14,6 +7,15 @@ export interface PaginationData {
   totalPages?: number;
   hasNextPage?: boolean;
   hasPreviousPage?: boolean;
+}
+
+export interface ApiResponse<T> {
+  message?: string;
+  data: T;
+  meta?: {
+    pagination?: PaginationData;
+  };
+  paginationData?: PaginationData;
 }
 
 export type User = {
@@ -34,8 +36,10 @@ export type BackendUser = {
   name: string;
   email: string;
   avatar?: string | null;
+  profileBanner?: string | null;
   role: UserRole;
   isActive: boolean;
+  referralCode?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -43,18 +47,22 @@ export type BackendUser = {
 export type UsersResponse = {
   users: User[];
   total_users: number;
+  pagination?: PaginationData;
 };
 
 export type CreateUserPayload = {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   role: UserRole;
+  avatar?: string | null;
+  profileBanner?: string | null;
 };
 
 export type UpdateUserPayload = Partial<Omit<CreateUserPayload, "password">> & {
   password?: string;
   isActive?: boolean;
+  referralCode?: string;
 };
 
-export type UserApiRes = ApiResponse<User>;
+export type UserApiRes = ApiResponse<BackendUser>;

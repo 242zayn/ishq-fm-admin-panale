@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type {
+  ApiResponse,
   BackendUser,
   CreateUserPayload,
   UpdateUserPayload,
@@ -8,14 +9,13 @@ import type {
 } from "./types";
 
 function toDashboardUser(user: BackendUser): User {
-  const [firstName = "", ...lastName] = user.name.trim().split(/\s+/);
-
   return {
-    id: user["_id"],
-    first_name: firstName,
-    last_name: lastName.join(" "),
-    email: user.email,
-    role: user.role,
+    id: user._id,
+    name: user.name || "",
+    email: user.email || "",
+    role: user.role || "user",
+    profileBanner: user.profileBanner ?? "",
+    referralCode: user.referralCode ?? "",
     status: user.isActive ? "Active" : "Inactive",
     avatar: user.avatar ?? null,
     created_at: user.createdAt,
@@ -24,12 +24,27 @@ function toDashboardUser(user: BackendUser): User {
 }
 
 export async function getUsers(): Promise<UsersResponse> {
-  const users = await apiClient<BackendUser[]>("/backend/user");
-  const mappedUsers = users?.data.map(toDashboardUser);
+  const response = await apiClient<ApiResponse<BackendUser[]> | BackendUser[]>(
+    "/backend/user",
+  );
+  const backendUsers = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : [];
+  const mappedUsers = backendUsers.map(toDashboardUser);
+
+  const total =
+    (!Array.isArray(response)
+      ? (response?.meta?.pagination?.total ?? response?.paginationData?.total)
+      : undefined) ?? mappedUsers.length;
 
   return {
     users: mappedUsers,
-    total_users: mappedUsers.length,
+    total_users: total,
+    pagination: !Array.isArray(response)
+      ? (response?.meta?.pagination ?? response?.paginationData)
+      : undefined,
   };
 }
 

@@ -1,4 +1,5 @@
 "use client";
+
 import { Icons } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
@@ -11,21 +12,19 @@ import { CopyToClipboard } from "@/components/ui/copy-to-clipboard";
 export const columns: ColumnDef<User>[] = [
   {
     id: "name",
-    accessorFn: (row) => `${row.first_name} ${row.last_name}`,
+    accessorKey: "name",
     header: ({ column }: { column: Column<User, unknown> }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
       <div className="flex flex-col">
-        <span className="font-medium">
-          {row.original.first_name} {row.original.last_name}
-        </span>
+        <span className="font-medium">{row.original.name || "User"}</span>
         <div className="flex items-center gap-1.5">
           <CopyToClipboard
             variant="inline"
             text={row.original.email}
             successMessage="User Email copied to clipboard"
-            className="text-muted-foreground hover:text-foreground cursor-pointer "
+            className="text-muted-foreground hover:text-foreground cursor-pointer"
           />
         </div>
       </div>
@@ -37,6 +36,22 @@ export const columns: ColumnDef<User>[] = [
       icon: Icons.text,
     },
     enableColumnFilter: true,
+  },
+  {
+    accessorKey: "referralCode",
+    header: "REFERRAL CODE",
+    cell: ({ cell }) => {
+      const code = cell.getValue<string>();
+      if (!code)
+        return <span className="text-muted-foreground text-xs">—</span>;
+      return (
+        <CopyToClipboard
+          variant="badge"
+          text={code}
+          successMessage="Referral code copied"
+        />
+      );
+    },
   },
   {
     accessorKey: "created_at",
@@ -89,7 +104,7 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "action",
     header: "Action",
     cell: ({ row }) => {
-      const isAdmin = row.original.role == "admin";
+      const isAdmin = row.original.role === "admin";
       if (isAdmin) {
         return null;
       }
