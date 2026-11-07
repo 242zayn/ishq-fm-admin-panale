@@ -1,20 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Icons } from "@/components/icons";
+import { ImagePreview } from "@/components/ui/image-preview";
 import type { Story, StoryMainCategory } from "../../api/types";
 import { StoryActions } from "../story-actions";
 
@@ -31,60 +22,16 @@ function getMainCategoryId(
 }
 
 export function StoryBannerPreview({ story }: { story: Story }) {
-  const [open, setOpen] = useState(false);
   const imageUrl = story.coverImage || story.bannerImage;
 
-  if (!imageUrl) {
-    return <span className="text-muted-foreground text-xs">No image</span>;
-  }
-
   return (
-    <>
-      <div className="w-20">
-        <button
-          type="button"
-          aria-label={`Preview ${story.title} banner image`}
-          title="Preview image"
-          onClick={() => setOpen(true)}
-          className="group relative h-14 w-20 overflow-hidden rounded-lg border border-border/60 bg-muted/30 p-0 transition-transform hover:scale-105"
-        >
-          <Image
-            src={imageUrl}
-            alt={`${story.title} banner`}
-            width={80}
-            height={56}
-            unoptimized
-            className="h-full w-full object-cover"
-          />
-          <span
-            aria-hidden="true"
-            className="bg-background/90 text-foreground absolute right-1 bottom-1 flex size-5 items-center justify-center rounded-full opacity-90 transition group-hover:scale-110 shadow-sm"
-          >
-            <Icons.search className="h-3 w-3" />
-          </span>
-        </button>
-      </div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-full sm:max-w-4xl p-6">
-          <DialogHeader>
-            <DialogTitle>{story.title} Banner</DialogTitle>
-            <DialogDescription>
-              Full-size banner image preview.
-            </DialogDescription>
-          </DialogHeader>
-          <Card className="bg-muted relative flex h-[70vh] items-center justify-center overflow-hidden rounded-xl border border-border/60">
-            <Image
-              src={imageUrl}
-              alt={`${story.title} banner preview`}
-              width={1600}
-              height={1200}
-              unoptimized
-              className="h-full w-full object-contain"
-            />
-          </Card>
-        </DialogContent>
-      </Dialog>
-    </>
+    <ImagePreview
+      src={imageUrl}
+      alt={`${story.title} cover`}
+      title={`${story.title} Cover`}
+      description="Full-size cover image preview."
+      aspect="banner"
+    />
   );
 }
 

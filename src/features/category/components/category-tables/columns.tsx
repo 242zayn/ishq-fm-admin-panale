@@ -6,6 +6,7 @@ import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-h
 import type { Column, ColumnDef } from "@tanstack/react-table";
 import type { Category } from "../../api/types";
 import { CellAction } from "./cell-action";
+import { ImagePreview } from "@/components/ui/image-preview";
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -14,20 +15,19 @@ export const columns: ColumnDef<Category>[] = [
     cell: ({ row }) => {
       const bannerImage = row.original.bannerImage;
       return (
-        <div className="w-10 h-14 overflow-hidden rounded-md border bg-muted">
-          {bannerImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={bannerImage}
-              alt="banner"
-              className="size-full object-cover"
-            />
-          ) : (
-            <div className="flex size-full items-center justify-center text-muted-foreground">
+        <ImagePreview
+          src={bannerImage}
+          alt={`${row.original.title} banner`}
+          title={`${row.original.title} Banner`}
+          description="Category banner image preview."
+          aspect="cover"
+          className="w-10 h-14 rounded-md"
+          fallback={
+            <div className="w-10 h-14 overflow-hidden rounded-md border bg-muted flex items-center justify-center text-muted-foreground">
               <Icons.media className="h-4 w-4" />
             </div>
-          )}
-        </div>
+          }
+        />
       );
     },
   },
@@ -44,48 +44,71 @@ export const columns: ColumnDef<Category>[] = [
   {
     accessorKey: "slug",
     header: "SLUG",
-    enableSorting: false,
   },
   {
     accessorKey: "mainCategory",
     header: "PARENT CATEGORY",
-    cell: ({ row }) => {
-      const raw = row.original.mainCategory;
-      const mainCategoryTitle =
-        typeof raw === "object" && raw !== null
-          ? raw.title
-          : typeof raw === "string"
-            ? raw
-            : "—";
-      return <div className="font-medium">{mainCategoryTitle || "—"}</div>;
+    cell: ({ cell }) => {
+      const mainCat = cell.getValue<Category["mainCategory"]>();
+      return (
+        <div className="font-medium text-muted-foreground">
+          {mainCat?.title ?? "—"}
+        </div>
+      );
     },
   },
   {
     accessorKey: "isActive",
     header: "STATUS",
-    cell: ({ row }) => {
-      const active = row.original.isActive;
-      const Icon = active ? Icons.circleCheck : Icons.xCircle;
+    cell: ({ cell }) => {
+      const active = cell.getValue<boolean>();
       return (
-        <Badge variant="outline" className="capitalize">
-          <Icon />
+        <Badge
+          variant="outline"
+          className={
+            active
+              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              : "border-muted-foreground/20 text-muted-foreground"
+          }
+        >
+          {active ? (
+            <Icons.check className="mr-1 h-3 w-3" />
+          ) : (
+            <Icons.close className="mr-1 h-3 w-3" />
+          )}
           {active ? "Active" : "Inactive"}
         </Badge>
       );
     },
-    enableSorting: false,
   },
   {
     accessorKey: "isFeatured",
     header: "FEATURED",
-    cell: ({ cell }) => (cell.getValue<boolean>() ? "Yes" : "No"),
-    enableSorting: false,
+    cell: ({ cell }) => (
+      <span className="text-xs text-muted-foreground">
+        {cell.getValue<boolean>() ? "Yes" : "No"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "sortOrder",
+    header: "ORDER",
+    cell: ({ cell }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {cell.getValue<number>()}
+      </span>
+    ),
   },
   {
     accessorKey: "tags",
     header: "TAGS",
-    cell: ({ cell }) => (cell.getValue<string[]>() ?? []).join(", "),
-    enableSorting: false,
+    cell: ({ cell }) => {
+      const tags = cell.getValue<string[]>() ?? [];
+      if (!tags.length) return <span className="text-muted-foreground">—</span>;
+      return (
+        <span className="text-xs text-muted-foreground">{tags.join(", ")}</span>
+      );
+    },
   },
   {
     id: "actions",
