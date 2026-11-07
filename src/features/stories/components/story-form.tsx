@@ -650,7 +650,16 @@ export function StoryForm({ initialStory }: StoryFormProps) {
         <CardContent className="space-y-6 pt-6">
           {/* Images Row */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-3">
+              <StoryImageUpload
+                label="Cover Image"
+                aspect="cover"
+                value={coverImage}
+                onChange={setCoverImage}
+                disabled={isPending}
+              />
+            </div>
+            <div className="lg:col-span-9">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">
@@ -765,15 +774,6 @@ export function StoryForm({ initialStory }: StoryFormProps) {
                 onChange={setBannerImage}
                 disabled={isPending}
               />*/}
-            <div className="lg:col-span-5">
-              <StoryImageUpload
-                label="Cover Image"
-                aspect="cover"
-                value={coverImage}
-                onChange={setCoverImage}
-                disabled={isPending}
-              />
-            </div>
           </div>
 
           {/* Category, Rating, Tags, Default Language */}
