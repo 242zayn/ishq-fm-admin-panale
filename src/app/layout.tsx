@@ -16,37 +16,62 @@ const META_THEME_COLORS = {
   dark: '#09090b'
 };
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
-  ...(process.env.NEXT_PUBLIC_APP_URL
-    ? { metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL) }
-    : {}),
+  metadataBase: new URL(appUrl),
   title: {
-    default: 'Shadcn Dashboard - Next.js Admin Dashboard Template',
-    template: '%s | Shadcn Dashboard'
+    default: 'Ishq FM - Admin Dashboard',
+    template: '%s | Ishq FM'
   },
   description:
-    'Free, open source admin dashboard starter built with Next.js 16, shadcn/ui, Tailwind CSS, and TypeScript.',
+    'Administration dashboard for Ishq FM. Manage stories, chapters, audio, categories, users, and referrals.',
+  applicationName: 'Ishq FM Admin',
+  authors: [{ name: 'Ishq FM Team' }],
+  creator: 'Ishq FM',
+  publisher: 'Ishq FM',
+  keywords: [
+    'Ishq FM',
+    'Admin Dashboard',
+    'Stories',
+    'Audio Stories',
+    'Podcasts',
+    'Content Management System'
+  ],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/images/ishq-fm-logo.png', type: 'image/png' }
+    ],
+    shortcut: '/favicon.ico',
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }]
+  },
   openGraph: {
-    title: 'Shadcn Dashboard - Next.js Admin Dashboard Template',
+    title: 'Ishq FM - Admin Dashboard',
     description:
-      'Free, open source admin dashboard starter built with Next.js 16, shadcn/ui, Tailwind CSS, and TypeScript.',
-    siteName: 'Shadcn Dashboard',
+      'Administration dashboard for Ishq FM. Manage stories, chapters, audio, categories, users, and referrals.',
+    siteName: 'Ishq FM',
     type: 'website',
+    locale: 'en_US',
     images: [
       {
-        url: '/shadcn-dashboard.png',
-        width: 3200,
-        height: 1600,
-        alt: 'Shadcn Dashboard overview page'
+        url: '/images/ishq-fm-logo.png',
+        width: 1200,
+        height: 1200,
+        alt: 'Ishq FM Logo'
       }
     ]
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Shadcn Dashboard - Next.js Admin Dashboard Template',
+    card: 'summary',
+    title: 'Ishq FM - Admin Dashboard',
     description:
-      'Free, open source admin dashboard starter built with Next.js 16, shadcn/ui, Tailwind CSS, and TypeScript.',
-    images: ['/shadcn-dashboard.png']
+      'Administration dashboard for Ishq FM. Manage stories, chapters, audio, categories, users, and referrals.',
+    images: ['/images/ishq-fm-logo.png']
+  },
+  robots: {
+    index: false,
+    follow: false
   }
 };
 
@@ -67,19 +92,19 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang='en' suppressHydrationWarning data-theme={themeToApply}>
       <head>
-      <Script
-        id='theme-color-init'
-        strategy='beforeInteractive'
-        dangerouslySetInnerHTML={{
-          __html: `
-            try {
-              if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
-              }
-            } catch (_) {}
-          `
-        }}
-      />
+        <Script
+          id='theme-color-init'
+          strategy='beforeInteractive'
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
+                }
+              } catch (_) {}
+            `
+          }}
+        />
       </head>
       <body
         className={cn(
