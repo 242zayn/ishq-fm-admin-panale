@@ -1,8 +1,8 @@
-import { MainCategory } from "@/features/main-category/api/types";
-import { ApiResponse } from "@/features/users/api/types";
+import { MainCategory } from '@/features/main-category/api/types';
+import { ApiResponse } from '@/features/users/api/types';
 
 export type Category = {
-  id: string;
+  _id: string;
   mainCategory?: MainCategory;
   title: string;
   slug: string;
@@ -18,7 +18,7 @@ export type Category = {
   updatedAt?: string;
 };
 
-export type CategoryApiModel = Omit<Category, "id"> & {
+export type CategoryApiModel = Omit<Category, 'id'> & {
   _id: string;
 };
 
@@ -55,10 +55,7 @@ export type CategoryMutationResponse = {
   category: Category;
 };
 
-export type CategoryMutationApiResponse = Omit<
-  CategoryMutationResponse,
-  "category"
-> & {
+export type CategoryMutationApiResponse = Omit<CategoryMutationResponse, 'category'> & {
   category: CategoryApiModel;
 };
 
@@ -67,10 +64,7 @@ export type DeleteCategoryResponse = {
   deleted: Category;
 };
 
-export type DeleteCategoryApiResponse = Omit<
-  DeleteCategoryResponse,
-  "deleted"
-> & {
+export type DeleteCategoryApiResponse = Omit<DeleteCategoryResponse, 'deleted'> & {
   deleted: CategoryApiModel;
 };
 
