@@ -22,6 +22,7 @@ export function CategoryTable() {
   };
   const { data, error } = useCategories(filters);
 
+  console.log("data is that", data);
   if (error) {
     throw error;
   }
@@ -29,7 +30,7 @@ export function CategoryTable() {
   const { table } = useDataTable({
     data: data?.data ?? [],
     columns,
-    pageCount: data?.meta.pagination.totalPages ?? 0,
+    pageCount: data?.meta?.pagination?.totalPages ?? 0,
     shallow: true,
     debounceMs: 500,
     initialState: { columnPinning: { right: ["actions"] } },

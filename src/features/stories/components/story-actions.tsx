@@ -68,7 +68,7 @@ export function StoryActions({ story }: { story: Story }) {
           }
           title="View Story"
         >
-          <Icons.video className="h-4 w-4" />
+          <Icons.eyeOff className="h-4 w-4" />
           <span className="sr-only">View</span>
         </Button>
         <Button

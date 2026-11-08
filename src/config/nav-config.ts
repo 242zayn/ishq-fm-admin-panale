@@ -47,14 +47,6 @@ export const navGroups: NavGroup[] = [
       },
 
       {
-        title: "Product",
-        url: "/dashboard/product",
-        icon: "product",
-        shortcut: ["p", "p"],
-        isActive: false,
-        items: [],
-      },
-      {
         title: "Category Manage",
         url: "/dashboard/main-category",
         icon: "categories",
@@ -100,70 +92,78 @@ export const navGroups: NavGroup[] = [
         items: [],
       },
       {
-        title: "Kanban",
-        url: "/dashboard/kanban",
-        icon: "kanban",
-        shortcut: ["k", "k"],
+        title: "Refferrals",
+        url: "/dashboard/referrals",
+        icon: "share",
+        shortcut: ["u", "u"],
         isActive: false,
         items: [],
       },
-      {
-        title: "Chat",
-        url: "/dashboard/chat",
-        icon: "chat",
-        shortcut: ["c", "c"],
-        isActive: false,
-        items: [],
-      },
-      {
-        title: "AI Chat",
-        url: "/dashboard/ai-chat",
-        icon: "sparkles",
-        shortcut: ["a", "i"],
-        isActive: false,
-        items: [],
-      },
+      // {
+      //   title: "Kanban",
+      //   url: "/dashboard/kanban",
+      //   icon: "kanban",
+      //   shortcut: ["k", "k"],
+      //   isActive: false,
+      //   items: [],
+      // },
+      // {
+      //   title: "Chat",
+      //   url: "/dashboard/chat",
+      //   icon: "chat",
+      //   shortcut: ["c", "c"],
+      //   isActive: false,
+      //   items: [],
+      // },
+      // {
+      //   title: "AI Chat",
+      //   url: "/dashboard/ai-chat",
+      //   icon: "sparkles",
+      //   shortcut: ["a", "i"],
+      //   isActive: false,
+      //   items: [],
+      // },
     ],
   },
   {
     label: "Elements",
     items: [
-      {
-        title: "Forms",
-        url: "#",
-        icon: "forms",
-        isActive: true,
-        items: [
-          {
-            title: "Basic Form",
-            url: "/dashboard/forms/basic",
-            icon: "forms",
-            shortcut: ["f", "f"],
-          },
-          {
-            title: "Multi-Step Form",
-            url: "/dashboard/forms/multi-step",
-            icon: "forms",
-          },
-          {
-            title: "Sheet & Dialog",
-            url: "/dashboard/forms/sheet-form",
-            icon: "forms",
-          },
-          {
-            title: "Advanced Patterns",
-            url: "/dashboard/forms/advanced",
-            icon: "forms",
-          },
-        ],
-      },
-      {
-        title: "React Query",
-        url: "/dashboard/react-query",
-        icon: "code",
-        isActive: false,
-        items: [],
-      },
+      // {
+      //   title: "Forms",
+      //   url: "#",
+      //   icon: "forms",
+      //   isActive: true,
+      //   items: [
+      //     {
+      //       title: "Basic Form",
+      //       url: "/dashboard/forms/basic",
+      //       icon: "forms",
+      //       shortcut: ["f", "f"],
+      //     },
+      //     {
+      //       title: "Multi-Step Form",
+      //       url: "/dashboard/forms/multi-step",
+      //       icon: "forms",
+      //     },
+      //     {
+      //       title: "Sheet & Dialog",
+      //       url: "/dashboard/forms/sheet-form",
+      //       icon: "forms",
+      //     },
+      //     {
+      //       title: "Advanced Patterns",
+      //       url: "/dashboard/forms/advanced",
+      //       icon: "forms",
+      //     },
+      //   ],
+      // },
+      // {
+      //   title: "React Query",
+      //   url: "/dashboard/react-query",
+      //   icon: "code",
+      //   isActive: false,
+      //   items: [],
+      // },
       {
         title: "Icons",
         url: "/dashboard/elements/icons",
@@ -173,29 +173,29 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
-  {
-    label: "",
-    items: [
-      {
-        title: "Account",
-        url: "#",
-        icon: "account",
-        isActive: true,
-        items: [
-          {
-            title: "Notifications",
-            url: "/dashboard/notifications",
-            icon: "notification",
-            shortcut: ["n", "n"],
-          },
-          {
-            title: "Login",
-            shortcut: ["l", "l"],
-            url: "/",
-            icon: "login",
-          },
-        ],
-      },
-    ],
-  },
+  // {
+  //   label: "",
+  //   items: [
+  //     {
+  //       title: "Account",
+  //       url: "#",
+  //       icon: "account",
+  //       isActive: true,
+  //       items: [
+  //         {
+  //           title: "Notifications",
+  //           url: "/dashboard/notifications",
+  //           icon: "notification",
+  //           shortcut: ["n", "n"],
+  //         },
+  //         {
+  //           title: "Login",
+  //           shortcut: ["l", "l"],
+  //           url: "/",
+  //           icon: "login",
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
 ];
