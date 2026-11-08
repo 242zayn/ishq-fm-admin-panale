@@ -29,9 +29,7 @@ function normalizeCategory(category: unknown): Category {
 }
 
 export const categoryResource = {
-  getCategories: async (
-    params: CategoryFilters = {},
-  ): Promise<CategoriesResponse> => {
+  getCategories: async (params: CategoryFilters = {}) => {
     const searchParams = new URLSearchParams();
     if (params.page !== undefined)
       searchParams.set("page", String(params.page));
@@ -48,13 +46,15 @@ export const categoryResource = {
     const response = await apiClient<CategoriesApiResponse>(
       `/backend/categories${query ? `?${query}` : ""}`,
     );
-    return { ...response, data: (response.data || []).map(normalizeCategory) };
+    console.log("response is that", response);
+    // return { ...response, data: (response.data || []).map(normalizeCategory) };
+    return response;
   },
 
   getCategoriesByMainCategory: async (
     mainCategoryId: string,
     params: CategoryFilters = {},
-  ): Promise<CategoriesResponse> => {
+  ) => {
     const searchParams = new URLSearchParams();
     if (params.page !== undefined)
       searchParams.set("page", String(params.page));
@@ -65,7 +65,8 @@ export const categoryResource = {
     const response = await apiClient<CategoriesApiResponse>(
       `/backend/categories/main/${encodeURIComponent(mainCategoryId)}${query ? `?${query}` : ""}`,
     );
-    return { ...response, data: (response.data || []).map(normalizeCategory) };
+    return response;
+    // return { ...response, data: (response.data || []).map(normalizeCategory) };
   },
 
   getAllCategories: async (): Promise<Category[]> => {

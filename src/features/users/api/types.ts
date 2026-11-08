@@ -15,7 +15,7 @@ export interface ApiResponse<T> {
   meta?: {
     pagination?: PaginationData;
   };
-  paginationData?: PaginationData;
+  // paginationData?: PaginationData;
 }
 
 export type User = {

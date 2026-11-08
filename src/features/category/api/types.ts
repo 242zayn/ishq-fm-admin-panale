@@ -1,4 +1,5 @@
 import { MainCategory } from "@/features/main-category/api/types";
+import { ApiResponse } from "@/features/users/api/types";
 
 export type Category = {
   id: string;
@@ -45,9 +46,9 @@ export type CategoriesResponse = {
   };
 };
 
-export type CategoriesApiResponse = Omit<CategoriesResponse, "data"> & {
-  data: CategoryApiModel[];
-};
+// export type CategoriesApiResponse = Omit<CategoriesResponse, "data"> & {
+//   data: CategoryApiModel[];
+// };
 
 export type CategoryMutationResponse = {
   message: string;
@@ -85,3 +86,5 @@ export type CategoryPayload = {
   sortOrder?: number;
   tags?: string[];
 };
+
+export type CategoriesApiResponse = ApiResponse<Category[]>;
