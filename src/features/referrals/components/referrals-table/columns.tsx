@@ -4,6 +4,7 @@ import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
+import { formatDateTime } from '@/lib/format';
 import type { Column, ColumnDef } from '@tanstack/react-table';
 import type { Referral } from '../../api/types';
 import { CellAction } from './cell-action';
@@ -130,19 +131,12 @@ export const columns: ColumnDef<Referral>[] = [
     ),
     cell: ({ cell }) => {
       const rawDate = cell.getValue<string>();
-      if (!rawDate) return <span className='text-muted-foreground'>—</span>;
-      const date = new Date(rawDate);
-      return Number.isNaN(date.getTime())
-        ? '—'
-        : new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-          }).format(date);
+      return formatDateTime(rawDate);
     }
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => <CellAction data={row.original} />
   }
-  // {
-  //   id: "actions",
-  //   header: "Actions",
-  //   cell: ({ row }) => <CellAction data={row.original} />,
-  // },
 ];

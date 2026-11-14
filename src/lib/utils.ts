@@ -22,3 +22,5 @@ export function formatBytes(
     sizeType === 'accurate' ? (accurateSizes[i] ?? 'Bytest') : (sizes[i] ?? 'Bytes')
   }`;
 }
+
+export { formatDate, formatDateTime, type FormatDateOptions } from './format';
