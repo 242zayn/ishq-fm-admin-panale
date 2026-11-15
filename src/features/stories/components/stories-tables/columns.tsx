@@ -1,24 +1,23 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import type { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
-import { Badge } from "@/components/ui/badge";
-import { Icons } from "@/components/icons";
-import { ImagePreview } from "@/components/ui/image-preview";
-import type { Story, StoryMainCategory } from "../../api/types";
-import { StoryActions } from "../story-actions";
+import Link from 'next/link';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
+import { Badge } from '@/components/ui/badge';
+import { Icons } from '@/components/icons';
+import { ImagePreview } from '@/components/ui/image-preview';
+import { formatDateTime } from '@/lib/format';
+import type { Story, StoryMainCategory } from '../../api/types';
+import { StoryActions } from '../story-actions';
 
-const mainCategoryIdField = "_id";
+const mainCategoryIdField = '_id';
 
-function getMainCategoryId(
-  mainCategory: StoryMainCategory | string | null | undefined,
-) {
-  if (!mainCategory || typeof mainCategory === "string") {
-    return mainCategory ?? "";
+function getMainCategoryId(mainCategory: StoryMainCategory | string | null | undefined) {
+  if (!mainCategory || typeof mainCategory === 'string') {
+    return mainCategory ?? '';
   }
 
-  return mainCategory.id ?? mainCategory[mainCategoryIdField] ?? "";
+  return mainCategory.id ?? mainCategory[mainCategoryIdField] ?? '';
 }
 
 export function StoryBannerPreview({ story }: { story: Story }) {
@@ -29,62 +28,58 @@ export function StoryBannerPreview({ story }: { story: Story }) {
       src={imageUrl}
       alt={`${story.title} cover`}
       title={`${story.title} Cover`}
-      description="Full-size cover image preview."
-      aspect="banner"
+      description='Full-size cover image preview.'
+      aspect='banner'
     />
   );
 }
 
-export function getStoriesColumns(
-  mainCategoryNames: Map<string, string>,
-): ColumnDef<Story>[] {
+export function getStoriesColumns(mainCategoryNames: Map<string, string>): ColumnDef<Story>[] {
   return [
     {
-      id: "banner",
-      header: "Banner Image",
+      id: 'banner',
+      header: 'Banner Image',
       cell: ({ row }) => <StoryBannerPreview story={row.original} />,
-      enableSorting: false,
+      enableSorting: false
     },
     {
-      id: "name",
-      accessorKey: "title",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Story" />
-      ),
+      id: 'name',
+      accessorKey: 'title',
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Story' />,
       cell: ({ row }) => (
-        <div className="flex flex-col gap-0.5 max-w-xs">
+        <div className='flex flex-col gap-0.5 max-w-xs'>
           <Link
             href={`/dashboard/stories/${row.original._id}`}
-            className="font-medium hover:underline text-foreground line-clamp-1"
+            className='font-medium hover:underline text-foreground line-clamp-1'
           >
             {row.original.title}
           </Link>
           {row.original.synopsis && (
-            <span className="text-xs text-muted-foreground line-clamp-1">
+            <span className='text-xs text-muted-foreground line-clamp-1'>
               {row.original.synopsis}
             </span>
           )}
         </div>
       ),
       meta: {
-        label: "Story",
-        placeholder: "Search stories by title...",
-        variant: "text",
-        icon: Icons.search,
+        label: 'Story',
+        placeholder: 'Search stories by title...',
+        variant: 'text',
+        icon: Icons.search
       },
-      enableColumnFilter: true,
+      enableColumnFilter: true
     },
     {
-      id: "category",
-      header: "Category",
+      id: 'category',
+      header: 'Category',
       cell: ({ row }) => {
         const cat =
-          typeof row.original.categoryId === "object" && row.original.categoryId
+          typeof row.original.categoryId === 'object' && row.original.categoryId
             ? row.original.categoryId
             : null;
-        return <span className="font-medium">{cat?.title ?? "—"}</span>;
+        return <span className='font-medium'>{cat?.title ?? '—'}</span>;
       },
-      enableSorting: false,
+      enableSorting: false
     },
     // {
     //   id: "mainCategory",
@@ -104,69 +99,59 @@ export function getStoriesColumns(
     //   enableSorting: false,
     // },
     {
-      accessorKey: "authorName",
-      header: "Author",
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.authorName || "—"}</span>
-      ),
-      enableSorting: false,
+      accessorKey: 'authorName',
+      header: 'Author',
+      cell: ({ row }) => <span className='text-sm'>{row.original.authorName || '—'}</span>,
+      enableSorting: false
     },
     {
-      accessorKey: "currentLanguage",
-      header: "Language",
+      accessorKey: 'currentLanguage',
+      header: 'Language',
       cell: ({ row }) => (
-        <Badge
-          variant="outline"
-          className="uppercase text-[11px] font-semibold px-2 py-0.5"
-        >
-          {row.original.currentLanguage || "—"}
+        <Badge variant='outline' className='uppercase text-[11px] font-semibold px-2 py-0.5'>
+          {row.original.currentLanguage || '—'}
         </Badge>
       ),
-      enableSorting: false,
+      enableSorting: false
     },
     {
-      id: "chapters",
-      header: "Chapters",
+      id: 'chapters',
+      header: 'Chapters',
       cell: ({ row }) => (
-        <Badge
-          variant="secondary"
-          className="rounded-full px-2 py-0 text-xs font-medium"
-        >
+        <Badge variant='secondary' className='rounded-full px-2 py-0 text-xs font-medium'>
           {row.original.chapters?.length ?? 0}
         </Badge>
       ),
-      enableSorting: false,
+      enableSorting: false
     },
     {
-      accessorKey: "totalLikes",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Likes" />
-      ),
+      accessorKey: 'totalLikes',
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Likes' />,
       cell: ({ row }) => (
-        <div className="flex items-center gap-1.5 font-medium text-sm">
+        <div className='flex items-center gap-1.5 font-medium text-sm'>
           <span>{row.original.totalLikes ?? 0}</span>
         </div>
-      ),
+      )
     },
     {
-      id: "status",
-      header: "Status",
+      id: 'status',
+      header: 'Status',
       cell: ({ row }) => {
         const { isFeatured, isTrending } = row.original;
         if (!isFeatured && !isTrending) {
-          return <span className="text-muted-foreground text-xs">—</span>;
+          return <span className='text-muted-foreground text-xs'>—</span>;
         }
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className='flex flex-wrap gap-1'>
             {isFeatured && (
-              <Badge variant="secondary" className="text-[11px] px-1.5 py-0">
+              <Badge variant='secondary' className='text-[11px] px-1.5 py-0'>
                 Featured
               </Badge>
             )}
             {isTrending && (
               <Badge
-                variant="outline"
-                className="text-[11px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20"
+                variant='outline'
+                className='text-[11px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20'
               >
                 Trending
               </Badge>
@@ -174,17 +159,33 @@ export function getStoriesColumns(
           </div>
         );
       },
-      enableSorting: false,
+      enableSorting: false
     },
     {
-      id: "actions",
-      header: "Actions",
+      id: 'createdAt',
+      accessorKey: 'createdAt',
+      header: ({ column }) => <DataTableColumnHeader column={column} title='Created Date' />,
+      cell: ({ row }) => {
+        const dateStr = row.original.createdAt;
+        if (!dateStr) {
+          return <span className='text-muted-foreground text-xs'>—</span>;
+        }
+        return (
+          <span className='text-xs text-muted-foreground whitespace-nowrap'>
+            {formatDateTime(dateStr)}
+          </span>
+        );
+      }
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
       cell: ({ row }) => (
-        <div className="flex justify-end">
+        <div className='flex justify-end'>
           <StoryActions story={row.original} />
         </div>
       ),
-      enableSorting: false,
-    },
+      enableSorting: false
+    }
   ];
 }
