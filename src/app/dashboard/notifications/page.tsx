@@ -1,6 +1,6 @@
 import PageContainer from '@/components/layout/page-container';
 import NotificationsListingPage from '@/features/notifications/components/notifications-listing';
-import { NotificationsHeaderActions } from '@/features/notifications/components/send-notification-sheet';
+import { NotificationsHeaderActions } from '@/features/notifications/components/send-notification-dialog';
 import { searchParamsCache } from '@/lib/searchparams';
 import type { SearchParams } from 'nuqs/server';
 
