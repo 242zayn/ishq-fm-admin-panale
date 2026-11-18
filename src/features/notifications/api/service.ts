@@ -52,7 +52,7 @@ export const notificationResource = {
 
     const query = searchParams.toString();
     const response = await apiClient<NotificationListResponse>(
-      `/backend/notifications/my${query ? `?${query}` : ''}`
+      `/backend/notifications${query ? `?${query}` : ''}`
     );
 
     const items = Array.isArray(response?.data) ? response.data : [];
