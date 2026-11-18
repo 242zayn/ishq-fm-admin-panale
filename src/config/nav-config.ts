@@ -1,4 +1,4 @@
-import { NavGroup } from "@/types";
+import { NavGroup } from '@/types';
 
 /**
  * Navigation configuration with RBAC support
@@ -35,70 +35,78 @@ import { NavGroup } from "@/types";
  */
 export const navGroups: NavGroup[] = [
   {
-    label: "Overview",
+    label: 'Overview',
     items: [
       {
-        title: "Dashboard",
-        url: "/dashboard/overview",
-        icon: "dashboard",
+        title: 'Dashboard',
+        url: '/dashboard/overview',
+        icon: 'dashboard',
         isActive: false,
-        shortcut: ["d", "d"],
-        items: [],
+        shortcut: ['d', 'd'],
+        items: []
       },
 
       {
-        title: "Category Manage",
-        url: "/dashboard/main-category",
-        icon: "categories",
-        shortcut: ["c", "m"],
+        title: 'Category Manage',
+        url: '/dashboard/main-category',
+        icon: 'categories',
+        shortcut: ['c', 'm'],
         isActive: false,
         items: [
           {
-            title: "Main Categories",
-            url: "/dashboard/main-category",
-            icon: "categories",
-            shortcut: ["m", "c"],
+            title: 'Main Categories',
+            url: '/dashboard/main-category',
+            icon: 'categories',
+            shortcut: ['m', 'c']
           },
           {
-            title: "Sub Categories",
-            url: "/dashboard/category",
-            icon: "categories",
-            shortcut: ["c", "a"],
-          },
-        ],
+            title: 'Sub Categories',
+            url: '/dashboard/category',
+            icon: 'categories',
+            shortcut: ['c', 'a']
+          }
+        ]
       },
       {
-        title: "Stories",
-        url: "/dashboard/stories",
-        icon: "music",
-        shortcut: ["s", "s"],
+        title: 'Stories',
+        url: '/dashboard/stories',
+        icon: 'music',
+        shortcut: ['s', 's'],
         isActive: false,
-        items: [],
+        items: []
       },
       {
-        title: "Users",
-        url: "/dashboard/users",
-        icon: "teams",
-        shortcut: ["u", "u"],
+        title: 'Users',
+        url: '/dashboard/users',
+        icon: 'teams',
+        shortcut: ['u', 'u'],
         isActive: false,
-        items: [],
+        items: []
       },
       {
-        title: "Guest Users",
-        url: "/dashboard/guest-users",
-        icon: "teams",
-        shortcut: ["u", "u"],
+        title: 'Guest Users',
+        url: '/dashboard/guest-users',
+        icon: 'teams',
+        shortcut: ['g', 'u'],
         isActive: false,
-        items: [],
+        items: []
       },
       {
-        title: "Refferrals",
-        url: "/dashboard/referrals",
-        icon: "share",
-        shortcut: ["u", "u"],
+        title: 'Refferrals',
+        url: '/dashboard/referrals',
+        icon: 'share',
+        shortcut: ['r', 'r'],
         isActive: false,
-        items: [],
+        items: []
       },
+      {
+        title: 'Notifications',
+        url: '/dashboard/notifications',
+        icon: 'notification',
+        shortcut: ['n', 'n'],
+        isActive: false,
+        items: []
+      }
       // {
       //   title: "Kanban",
       //   url: "/dashboard/kanban",
@@ -123,10 +131,10 @@ export const navGroups: NavGroup[] = [
       //   isActive: false,
       //   items: [],
       // },
-    ],
+    ]
   },
   {
-    label: "Elements",
+    label: 'Elements',
     items: [
       // {
       //   title: "Forms",
@@ -138,63 +146,56 @@ export const navGroups: NavGroup[] = [
       //       title: "Basic Form",
       //       url: "/dashboard/forms/basic",
       //       icon: "forms",
-      //       shortcut: ["f", "f"],
+      //       shortcut: ["f", "b"],
       //     },
       //     {
-      //       title: "Multi-Step Form",
-      //       url: "/dashboard/forms/multi-step",
-      //       icon: "forms",
-      //     },
-      //     {
-      //       title: "Sheet & Dialog",
+      //       title: "Sheet Form",
       //       url: "/dashboard/forms/sheet-form",
       //       icon: "forms",
+      //       shortcut: ["f", "s"],
       //     },
       //     {
-      //       title: "Advanced Patterns",
+      //       title: "Multi Step Form",
+      //       url: "/dashboard/forms/multi-step",
+      //       icon: "forms",
+      //       shortcut: ["f", "m"],
+      //     },
+      //     {
+      //       title: "Advanced Form",
       //       url: "/dashboard/forms/advanced",
       //       icon: "forms",
+      //       shortcut: ["f", "a"],
       //     },
       //   ],
       // },
       // {
-      //   title: "React Query",
-      //   url: "/dashboard/react-query",
-      //   icon: "code",
+      //   title: "Icons",
+      //   url: "/dashboard/elements/icons",
+      //   icon: "elements",
+      //   shortcut: ["e", "i"],
       //   isActive: false,
       //   items: [],
       // },
-      {
-        title: "Icons",
-        url: "/dashboard/elements/icons",
-        icon: "palette",
-        isActive: false,
-        items: [],
-      },
-    ],
-  },
+      // {
+      //   title: "Product",
+      //   url: "/dashboard/product",
+      //   icon: "product",
+      //   shortcut: ["p", "p"],
+      //   isActive: false,
+      //   items: [],
+      // },
+    ]
+  }
   // {
-  //   label: "",
+  //   label: "Demo",
   //   items: [
   //     {
-  //       title: "Account",
-  //       url: "#",
-  //       icon: "account",
-  //       isActive: true,
-  //       items: [
-  //         {
-  //           title: "Notifications",
-  //           url: "/dashboard/notifications",
-  //           icon: "notification",
-  //           shortcut: ["n", "n"],
-  //         },
-  //         {
-  //           title: "Login",
-  //           shortcut: ["l", "l"],
-  //           url: "/",
-  //           icon: "login",
-  //         },
-  //       ],
+  //       title: "React Query Demo",
+  //       url: "/dashboard/react-query",
+  //       icon: "reactQuery",
+  //       shortcut: ["r", "q"],
+  //       isActive: false,
+  //       items: [],
   //     },
   //   ],
   // },
